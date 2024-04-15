@@ -9,8 +9,8 @@ executing==2.0.1
 fonttools==4.49.0
 ipykernel==6.29.2
 ipython==8.21.0
-jax==0.4.24
-jaxlib==0.4.24
+jax==0.4.26
+jaxlib==0.4.26+cuda12.cudnn89
 jedi==0.19.1
 jupyter_client==8.6.0
 jupyter_core==5.7.1
