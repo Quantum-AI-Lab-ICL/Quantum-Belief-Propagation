@@ -1,6 +1,6 @@
 # QBP
 
-
+WIP: A software package that runs the quantum belief propagation algorithm.
 
 ## Getting started
 
