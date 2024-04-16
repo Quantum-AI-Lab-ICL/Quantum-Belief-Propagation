@@ -1,11 +1,8 @@
 import jax.numpy as jnp
+
+from const import NUM_PARAMS_SINGLE, NUM_PARAMS_DOUBLE, MATRIX_SIZE_SINGLE, \
+    MATRIX_SIZE_DOUBLE
 from pauli import Pauli, _pauli_matrix, _pauli_matrix_2d, _parse_pauli_index
-
-
-NUM_PARAMS_SINGLE = 3
-NUM_PARAMS_DOUBLE = 9
-MATRIX_SIZE_SINGLE = 2
-MATRIX_SIZE_DOUBLE = 4
 
 
 class Hamiltonian:

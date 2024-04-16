@@ -1,5 +1,6 @@
-from pauli import Pauli
 from hamiltonian import Hamiltonian
+from pauli import Pauli
+from propagation import BeliefPropagator
 
 
 if __name__ == "__main__":
@@ -10,3 +11,4 @@ if __name__ == "__main__":
     hamiltonian.compute_partial_hamiltonians()
     print(hamiltonian.ham_single)
     print(hamiltonian.ham_double)
+    bp = BeliefPropagator(hamiltonian, 0)
