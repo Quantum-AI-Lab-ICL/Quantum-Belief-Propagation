@@ -1,8 +1,10 @@
+import jax.scipy.linalg as linalg
 import jax.numpy as jnp
 from jax import random
 
 from const import MATRIX_SIZE_SINGLE
 from hamiltonian import Hamiltonian
+from utils import _double_to_single_trace, _logm, _normalise
 
 
 class BeliefPropagator:
@@ -14,14 +16,69 @@ class BeliefPropagator:
         """
         TODO
         """
+
         self.hamiltonian = hamiltonian
         self.beliefs = hamiltonian.ham_double
         self.key = random.key(seed)
-        self.messages = jnp.zeros(((hamiltonian.size - 1) * 2,
-                                   MATRIX_SIZE_SINGLE, MATRIX_SIZE_SINGLE),
-                                  dtype=jnp.complex64)
+        self.num_beliefs = hamiltonian.size - 1
+        self.msg_forward = jnp.zeros((self.num_beliefs,
+                                      MATRIX_SIZE_SINGLE,
+                                      MATRIX_SIZE_SINGLE),
+                                     dtype=jnp.complex64)
+        self.msg_backward = jnp.zeros((self.num_beliefs,
+                                       MATRIX_SIZE_SINGLE,
+                                       MATRIX_SIZE_SINGLE),
+                                      dtype=jnp.complex64)
+        self._initialise()
+
+    def _initialise(self):
+        """
+        TODO
+        """
+        for i in range(self.num_beliefs):
+            self.msg_forward = \
+                self.msg_forward.at[i].set(jnp.eye(2))
+            self.msg_backward = \
+                self.msg_backward.at[i].set(jnp.eye(2))
 
     def step(self):
         """
         TODO
         """
+
+        new_msg_forward = jnp.zeros((self.num_beliefs,
+                                     MATRIX_SIZE_SINGLE,
+                                     MATRIX_SIZE_SINGLE),
+                                    dtype=jnp.complex64)
+
+        new_msg_backward = jnp.zeros((self.num_beliefs,
+                                      MATRIX_SIZE_SINGLE,
+                                      MATRIX_SIZE_SINGLE),
+                                     dtype=jnp.complex64)
+
+        for i in range(1, self.num_beliefs):
+            new_msg_forward = \
+                new_msg_forward.at[i].set(_normalise(linalg.expm(
+                    self.hamiltonian.get_partial_hamiltonian_single(i) +
+                    _logm(_double_to_single_trace(self.beliefs[i], 0)) +
+                    _logm(linalg.inv(self.msg_backward[i-1]))
+                )))
+
+        for i in range(self.num_beliefs - 1):
+            new_msg_backward = \
+                new_msg_backward.at[i].set(_normalise(linalg.expm(
+                    self.hamiltonian.get_partial_hamiltonian_single(i+1) +
+                    _logm(_double_to_single_trace(self.beliefs[i], 1)) +
+                    _logm(linalg.inv(self.msg_forward[i+1]))
+                )))
+
+        self.msg_forward.at[1:].set(new_msg_forward[1:])
+        self.msg_backward.at[:-1].set(new_msg_backward[:-1])
+
+        for i in range(self.num_beliefs):
+            self.beliefs = \
+                self.beliefs.at[i].set(_normalise(linalg.expm(
+                    self.hamiltonian.get_partial_hamiltonian_double(i) +
+                    _logm(jnp.kron(self.msg_forward[i], jnp.eye(2))) +
+                    _logm(jnp.kron(jnp.eye(2), self.msg_backward[i]))
+                )))

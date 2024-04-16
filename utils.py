@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 import jax.typing
+import scipy.linalg
 from jax import Array
 
 
@@ -51,3 +52,20 @@ def _double_to_single_trace(rho_double: jax.typing.ArrayLike,
             jnp.kron(jnp.eye(2), _ket_0()) + \
             jnp.kron(jnp.eye(2), _bra_1()) @ rho_double @ \
             jnp.kron(jnp.eye(2), _ket_1())
+
+
+def _normalise(rho: jax.typing.ArrayLike) -> Array:
+    """
+    TODO
+    """
+
+    rho /= jnp.trace(rho)
+    return rho
+
+
+def _logm(rho: jax.typing.ArrayLike) -> Array:
+    """
+    TODO
+    """
+
+    return jnp.array(scipy.linalg.logm(rho))
