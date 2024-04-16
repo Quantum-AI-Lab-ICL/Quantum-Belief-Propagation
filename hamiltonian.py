@@ -87,3 +87,17 @@ class Hamiltonian:
                             self.params_double[i, pauli_index] *
                             _pauli_matrix_2d(pauli_0, pauli_1)
                         )
+
+    def get_partial_hamiltonian_single(self, index):
+        """
+        TODO
+        """
+
+        return self.ham_single[index]
+
+    def get_partial_hamiltonian_double(self, index):
+        """
+        TODO
+        """
+
+        return self.ham_double[index]
