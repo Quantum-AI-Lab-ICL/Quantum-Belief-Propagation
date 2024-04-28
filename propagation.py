@@ -2,7 +2,7 @@ import jax.scipy.linalg as linalg
 import jax.numpy as jnp
 from jax import random
 
-from const import MATRIX_SIZE_SINGLE
+from const import MATRIX_SIZE_DOUBLE, MATRIX_SIZE_SINGLE
 from hamiltonian import Hamiltonian
 from utils import _double_to_single_trace, _logm, _normalise
 
@@ -18,9 +18,12 @@ class BeliefPropagator:
         """
 
         self.hamiltonian = hamiltonian
-        self.beliefs = hamiltonian.ham_double
         self.key = random.key(seed)
         self.num_beliefs = hamiltonian.size - 1
+        self.beliefs = jnp.zeros((self.num_beliefs,
+                                  MATRIX_SIZE_DOUBLE,
+                                  MATRIX_SIZE_DOUBLE),
+                                 dtype=jnp.complex64)
         self.msg_forward = jnp.zeros((self.num_beliefs,
                                       MATRIX_SIZE_SINGLE,
                                       MATRIX_SIZE_SINGLE),
@@ -36,6 +39,8 @@ class BeliefPropagator:
         TODO
         """
         for i in range(self.num_beliefs):
+            self.beliefs = \
+                self.beliefs.at[i].set(jnp.eye(4))
             self.msg_forward = \
                 self.msg_forward.at[i].set(jnp.eye(2))
             self.msg_backward = \
