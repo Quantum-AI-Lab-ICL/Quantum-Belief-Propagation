@@ -57,9 +57,7 @@ class BeliefPropagator:
                                      dtype=jnp.complex64)
 
         new_msg_forward = \
-            new_msg_forward.at[0].set(_normalise(linalg.expm(
-                _logm(_double_to_single_trace(self.beliefs[0], 1))
-            )))
+            new_msg_forward.at[0].set(jnp.eye(2))
 
         for i in range(1, self.num_beliefs):
             new_msg_forward = \
@@ -70,9 +68,7 @@ class BeliefPropagator:
 
         n = self.num_beliefs
         new_msg_backward = \
-            new_msg_backward.at[n-1].set(_normalise(linalg.expm(
-                _logm(_double_to_single_trace(self.beliefs[n-1], 0))
-            )))
+            new_msg_backward.at[n-1].set(jnp.eye(2))
 
         for i in range(self.num_beliefs - 1):
             new_msg_backward = \
