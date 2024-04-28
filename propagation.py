@@ -58,14 +58,12 @@ class BeliefPropagator:
 
         new_msg_forward = \
             new_msg_forward.at[0].set(_normalise(linalg.expm(
-                self.hamiltonian.get_partial_hamiltonian_single(0) +
                 _logm(_double_to_single_trace(self.beliefs[0], 1))
             )))
 
         for i in range(1, self.num_beliefs):
             new_msg_forward = \
                 new_msg_forward.at[i].set(_normalise(linalg.expm(
-                    self.hamiltonian.get_partial_hamiltonian_single(i) +
                     _logm(_double_to_single_trace(self.beliefs[i-1], 0)) +
                     _logm(linalg.inv(self.msg_backward[i-1]))
                 )))
@@ -73,14 +71,12 @@ class BeliefPropagator:
         n = self.num_beliefs
         new_msg_backward = \
             new_msg_backward.at[n-1].set(_normalise(linalg.expm(
-                self.hamiltonian.get_partial_hamiltonian_single(n) +
                 _logm(_double_to_single_trace(self.beliefs[n-1], 0))
             )))
 
         for i in range(self.num_beliefs - 1):
             new_msg_backward = \
                 new_msg_backward.at[i].set(_normalise(linalg.expm(
-                    self.hamiltonian.get_partial_hamiltonian_single(i+1) +
                     _logm(_double_to_single_trace(self.beliefs[i+1], 1)) +
                     _logm(linalg.inv(self.msg_forward[i+1]))
                 )))
@@ -91,7 +87,7 @@ class BeliefPropagator:
         for i in range(self.num_beliefs):
             self.beliefs = \
                 self.beliefs.at[i].set(_normalise(linalg.expm(
-                    self.hamiltonian.get_partial_hamiltonian_double(i) +
+                    self.hamiltonian.get_partial_hamiltonian(i) +
                     _logm(jnp.kron(self.msg_forward[i], jnp.eye(2))) +
                     _logm(jnp.kron(jnp.eye(2), self.msg_backward[i]))
                 )))

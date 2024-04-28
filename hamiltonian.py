@@ -52,6 +52,9 @@ class Hamiltonian:
         self.ham_double = jnp.zeros((self.size - 1, MATRIX_SIZE_DOUBLE,
                                      MATRIX_SIZE_DOUBLE),
                                     dtype=jnp.complex64)
+        self.hamiltonians = jnp.zeros((self.size - 1, MATRIX_SIZE_DOUBLE,
+                                       MATRIX_SIZE_DOUBLE),
+                                      dtype=jnp.complex64)
 
     def compute_partial_hamiltonians(self):
         """
@@ -85,6 +88,32 @@ class Hamiltonian:
                             _pauli_matrix_2d(pauli_0, pauli_1)
                         )
 
+        for i in range(self.size - 1):
+            self.hamiltonians = \
+                self.hamiltonians.at[i].add(
+                    jnp.kron(self._weighted_hamiltonian(self.ham_single, i),
+                             jnp.eye(2)) +
+                    jnp.kron(jnp.eye(2),
+                             self._weighted_hamiltonian(self.ham_single, i+1))
+                )
+            for pauli_0 in pauli_matrices:
+                for pauli_1 in pauli_matrices:
+                    pauli_index = _parse_pauli_index(pauli_0, pauli_1)
+                    self.hamiltonians = \
+                        self.hamiltonians.at[i].add(
+                            self.params_double[i, pauli_index] *
+                            _pauli_matrix_2d(pauli_0, pauli_1)
+                        )
+
+    def _weighted_hamiltonian(self, ham_single, index):
+        """
+        TODO
+        """
+        print(index)
+        if index == 0 or index == self.size - 1:
+            return ham_single[index]
+        return ham_single[index] / 2
+
     def get_partial_hamiltonian_single(self, index):
         """
         TODO
@@ -98,3 +127,10 @@ class Hamiltonian:
         """
 
         return self.ham_double[index]
+
+    def get_partial_hamiltonian(self, index):
+        """
+        TODO
+        """
+
+        return self.hamiltonians[index]
