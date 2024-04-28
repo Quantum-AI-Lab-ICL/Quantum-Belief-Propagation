@@ -66,9 +66,8 @@ class BeliefPropagator:
                     _logm(linalg.inv(self.msg_backward[i-1]))
                 )))
 
-        n = self.num_beliefs
         new_msg_backward = \
-            new_msg_backward.at[n-1].set(jnp.eye(2))
+            new_msg_backward.at[self.num_beliefs - 1].set(jnp.eye(2))
 
         for i in range(self.num_beliefs - 1):
             new_msg_backward = \
