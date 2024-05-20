@@ -1,7 +1,6 @@
 import jax.numpy as jnp
 import jax.scipy.linalg as linalg
 import jax.typing
-import scipy.linalg
 from jax import Array
 
 

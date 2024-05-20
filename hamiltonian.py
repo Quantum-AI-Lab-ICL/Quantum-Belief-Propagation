@@ -16,10 +16,10 @@ class Hamiltonian:
         """
 
         self.size = size
-        self.params_single = jnp.zeros((size, NUM_PARAMS_SINGLE),
-                                       dtype=jnp.complex64)
-        self.params_double = jnp.zeros((size - 1, NUM_PARAMS_DOUBLE),
-                                       dtype=jnp.complex64)
+        self._params_single = jnp.zeros((size, NUM_PARAMS_SINGLE),
+                                        dtype=jnp.complex64)
+        self._params_double = jnp.zeros((size - 1, NUM_PARAMS_DOUBLE),
+                                        dtype=jnp.complex64)
         self._reset_partial_hamiltonians()
 
     def set_param_single(self, index: int, pauli: Pauli, value: int):
@@ -28,8 +28,8 @@ class Hamiltonian:
         """
 
         pauli_index = pauli.value
-        self.params_single = \
-            self.params_single.at[index, pauli_index].set(value)
+        self._params_single = \
+            self._params_single.at[index, pauli_index].set(value)
 
     def set_param_double(self, index: int, pauli_0: Pauli, pauli_1: Pauli,
                          value: int):
@@ -38,8 +38,8 @@ class Hamiltonian:
         """
 
         pauli_index = _parse_pauli_index(pauli_0, pauli_1)
-        self.params_double = \
-            self.params_double.at[index, pauli_index].set(value)
+        self._params_double = \
+            self._params_double.at[index, pauli_index].set(value)
 
     def _reset_partial_hamiltonians(self):
         """
@@ -67,7 +67,7 @@ class Hamiltonian:
             for pauli in pauli_matrices:
                 ham_single = \
                     ham_single.at[i].add(
-                        self.params_single[i, pauli.value] *
+                        self._params_single[i, pauli.value] *
                         _pauli_matrix(pauli)
                     )
 
@@ -84,7 +84,7 @@ class Hamiltonian:
                     pauli_index = _parse_pauli_index(pauli_0, pauli_1)
                     self.hamiltonians = \
                         self.hamiltonians.at[i].add(
-                            self.params_double[i, pauli_index] *
+                            self._params_double[i, pauli_index] *
                             _pauli_matrix_2d(pauli_0, pauli_1)
                         )
 
