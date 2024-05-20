@@ -4,7 +4,7 @@ from jax import random
 
 from const import MATRIX_SIZE_DOUBLE, MATRIX_SIZE_SINGLE
 from hamiltonian import Hamiltonian
-from utils import _double_to_single_trace, _logm, _normalise
+from utils import _double_to_single_trace, _logmh, _normalise
 
 
 class BeliefPropagator:
@@ -67,8 +67,8 @@ class BeliefPropagator:
         for i in range(1, self.num_beliefs):
             new_msg_forward = \
                 new_msg_forward.at[i].set(_normalise(linalg.expm(
-                    _logm(_double_to_single_trace(self.beliefs[i-1], 0)) +
-                    _logm(linalg.inv(self.msg_backward[i-1]))
+                    _logmh(_double_to_single_trace(self.beliefs[i-1], 0)) +
+                    _logmh(linalg.inv(self.msg_backward[i-1]))
                 )))
 
         new_msg_backward = \
@@ -77,8 +77,8 @@ class BeliefPropagator:
         for i in range(self.num_beliefs - 1):
             new_msg_backward = \
                 new_msg_backward.at[i].set(_normalise(linalg.expm(
-                    _logm(_double_to_single_trace(self.beliefs[i+1], 1)) +
-                    _logm(linalg.inv(self.msg_forward[i+1]))
+                    _logmh(_double_to_single_trace(self.beliefs[i+1], 1)) +
+                    _logmh(linalg.inv(self.msg_forward[i+1]))
                 )))
 
         self.msg_forward = new_msg_forward
@@ -88,6 +88,6 @@ class BeliefPropagator:
             self.beliefs = \
                 self.beliefs.at[i].set(_normalise(linalg.expm(
                     self.hamiltonian.get_partial_hamiltonian(i) +
-                    _logm(jnp.kron(self.msg_forward[i], jnp.eye(2))) +
-                    _logm(jnp.kron(jnp.eye(2), self.msg_backward[i]))
+                    _logmh(jnp.kron(self.msg_forward[i], jnp.eye(2))) +
+                    _logmh(jnp.kron(jnp.eye(2), self.msg_backward[i]))
                 )))

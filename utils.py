@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import jax.scipy.linalg as linalg
 import jax.typing
 import scipy.linalg
 from jax import Array
@@ -63,9 +64,13 @@ def _normalise(rho: jax.typing.ArrayLike) -> Array:
     return rho
 
 
-def _logm(rho: jax.typing.ArrayLike) -> Array:
+def _logmh(rho: jax.typing.ArrayLike) -> Array:
     """
     TODO
     """
 
-    return jnp.array(scipy.linalg.logm(rho))
+    eigvals, eigvecs = linalg.eigh(rho)
+    log_eigvals = jnp.log(eigvals)
+    result = eigvecs @ jnp.diag(log_eigvals) \
+        @ jnp.conjugate(jnp.transpose(eigvecs))
+    return result

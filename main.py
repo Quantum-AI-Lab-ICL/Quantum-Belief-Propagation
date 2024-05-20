@@ -16,13 +16,14 @@ if __name__ == "__main__":
     hamiltonian.set_param_single(1, Pauli.X, coef)
     hamiltonian.set_param_single(2, Pauli.X, 0)
     hamiltonian.set_param_double(0, Pauli.Z, Pauli.Z, coef)
-    hamiltonian.set_param_double(1, Pauli.Z, Pauli.Z, 0.3)
+    hamiltonian.set_param_double(1, Pauli.Z, Pauli.Z, 7)
     hamiltonian.compute_partial_hamiltonians()
     print(hamiltonian.hamiltonians)
     bp = BeliefPropagator(hamiltonian, 0)
 
     jnp.set_printoptions(precision=2, suppress=True, linewidth=1000)
     for i in range(10):
+        print(bp.beliefs)
         bp.step()
 
     print(bp.beliefs)
