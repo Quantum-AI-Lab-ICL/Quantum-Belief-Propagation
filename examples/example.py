@@ -45,9 +45,9 @@ def main():
         diag_results = get_diag_results(rho, size)
         diag_end_time = time.perf_counter()
 
-        print(total_error(bp_results, diag_results))
-        print(bp_end_time - bp_start_time)
-        print(diag_end_time - diag_start_time)
+        print("Error:", total_error(bp_results, diag_results))
+        print("BP time:", bp_end_time - bp_start_time)
+        print("Exact time", diag_end_time - diag_start_time)
 
 
 def get_bp_results(beliefs, size):
@@ -56,7 +56,7 @@ def get_bp_results(beliefs, size):
     results = results.at[0].set(
         _double_to_single_trace(beliefs[0], 1))
     for i in range(beliefs.shape[0]):
-        results = results.at[0].set(
+        results = results.at[i+1].set(
             _double_to_single_trace(beliefs[i], 0))
     return results
 
@@ -65,7 +65,7 @@ def get_diag_results(rho, size):
     results = jnp.zeros((size, MATRIX_SIZE_SINGLE, MATRIX_SIZE_SINGLE),
                         dtype=jnp.complex64)
     for i in range(size):
-        results = results.at[0].set(rdm(rho, partial_dim=1, pos=i))
+        results = results.at[i].set(rdm(rho, partial_dim=1, pos=i))
     return results
 
 
@@ -74,11 +74,10 @@ def hamiltonian_setup(size: int, coef: int) -> Hamiltonian:
     TODO
     """
 
-    key = random.key(0)
+    key = random.key(3)
     num_values = 2 * size - 1
-    coef_mod_values = random.normal(key, (2 * num_values,))
-    coef_mod = coef_mod_values[:num_values] + 1j * coef_mod_values[num_values:]
-    ham = Hamiltonian(size, beta=10e-2)
+    coef_mod = random.normal(key, (2 * num_values,))
+    ham = Hamiltonian(size, beta=1)
     for i in range(size):
         ham.set_param_single(i, Pauli.X, coef * coef_mod[2*i])
     for i in range(size - 1):
@@ -96,7 +95,7 @@ def total_error(bp_results: jax.typing.ArrayLike,
     result = 0
     for i in range(bp_results.shape[0]):
         result += jnp.linalg.norm(bp_results[i] - diag_results[i])
-    return result
+    return result / bp_results.shape[0]
 
 
 if __name__ == "__main__":
