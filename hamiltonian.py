@@ -10,12 +10,13 @@ class Hamiltonian:
     TODO
     """
 
-    def __init__(self, size: int):
+    def __init__(self, size: int, beta: jnp.complex64):
         """
         TODO
         """
 
         self.size = size
+        self.beta = beta
         self._params_single = jnp.zeros((size, NUM_PARAMS_SINGLE),
                                         dtype=jnp.complex64)
         self._params_double = jnp.zeros((size - 1, NUM_PARAMS_DOUBLE),
@@ -29,7 +30,7 @@ class Hamiltonian:
 
         pauli_index = pauli.value
         self._params_single = \
-            self._params_single.at[index, pauli_index].set(value)
+            self._params_single.at[index, pauli_index].set(-self.beta * value)
 
     def set_param_double(self, index: int, pauli_0: Pauli, pauli_1: Pauli,
                          value: int):
@@ -39,7 +40,7 @@ class Hamiltonian:
 
         pauli_index = _parse_pauli_index(pauli_0, pauli_1)
         self._params_double = \
-            self._params_double.at[index, pauli_index].set(value)
+            self._params_double.at[index, pauli_index].set(-self.beta * value)
 
     def _reset_partial_hamiltonians(self):
         """

@@ -2,6 +2,7 @@ import jax.numpy as jnp
 import jax.scipy.linalg as linalg
 import jax.typing
 import time
+from jax import random
 
 from const import MATRIX_SIZE_SINGLE
 from hamiltonian import Hamiltonian
@@ -16,7 +17,7 @@ def main():
 
     # Warmup
     for _ in range(10):
-        hamiltonian = hamiltonian_setup(2, coef=-0.1)
+        hamiltonian = hamiltonian_setup(2, coef=1)
         bp = BeliefPropagator(hamiltonian, 0)
         for i in range(5):
             bp.step()
@@ -24,8 +25,8 @@ def main():
         rho = linalg.expm(H)
         rho /= jnp.trace(rho)
 
-    for size in range(3, 11):
-        hamiltonian = hamiltonian_setup(size, coef=-0.1)
+    for size in range(3, 9):
+        hamiltonian = hamiltonian_setup(size, coef=1)
         print(f"Number of particles: {size}")
 
         # Belief propagatioin
@@ -73,11 +74,15 @@ def hamiltonian_setup(size: int, coef: int) -> Hamiltonian:
     TODO
     """
 
-    ham = Hamiltonian(size)
+    key = random.key(0)
+    num_values = 2 * size - 1
+    coef_mod_values = random.normal(key, (2 * num_values,))
+    coef_mod = coef_mod_values[:num_values] + 1j * coef_mod_values[num_values:]
+    ham = Hamiltonian(size, beta=10e-2)
     for i in range(size):
-        ham.set_param_single(i, Pauli.X, coef)
+        ham.set_param_single(i, Pauli.X, coef * coef_mod[2*i])
     for i in range(size - 1):
-        ham.set_param_double(i, Pauli.Z, Pauli.Z, coef)
+        ham.set_param_double(i, Pauli.Z, Pauli.Z, coef * coef_mod[2*i+1])
     ham.compute_partial_hamiltonians()
     return ham
 
