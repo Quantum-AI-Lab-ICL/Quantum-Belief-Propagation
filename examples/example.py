@@ -4,20 +4,23 @@ import jax.typing
 import time
 from jax import random
 
-from const import MATRIX_SIZE_SINGLE
+import matplotlib.pyplot as plt
+
+from const import MATRIX_SIZE_SINGLE, MATRIX_SIZE_DOUBLE
 from hamiltonian import Hamiltonian
 from pauli import Pauli
 from propagation import BeliefPropagator
-from utils import _double_to_single_trace
-from examples.example_utils import hamiltonian_matrix, rdm
+from examples.example_utils import hamiltonian_matrix, rdm, \
+    get_single_rho, trans_mag, correlation
 
 
 def main():
     jnp.set_printoptions(precision=7, suppress=True, linewidth=1000)
+    beta = 1
 
     # Warmup
     for _ in range(10):
-        hamiltonian = hamiltonian_setup(2, coef=1, seed=0)
+        hamiltonian = hamiltonian_setup(2, beta=beta, coef=1, seed=0)
         bp = BeliefPropagator(hamiltonian, 1)
         for i in range(5):
             bp.step()
@@ -25,20 +28,26 @@ def main():
         rho = linalg.expm(H)
         rho /= jnp.trace(rho)
 
-    for size in range(3, 9):
+        trans_mag_bp = []
+        trans_mag_diag = []
+        correlation_bp = []
+        correlation_diag = []
+        density = []
+
+    for size in range(3, 12):
         print(f"Number of particles: {size}")
         num_experiments = 1
         total_error = 0
 
         for seed in range(num_experiments):
-            hamiltonian = hamiltonian_setup(size, coef=1, seed=seed)
+            hamiltonian = hamiltonian_setup(size, beta, coef=1, seed=seed)
 
             # Belief propagatioin
             bp_start_time = time.perf_counter()
             bp = BeliefPropagator(hamiltonian, 0)
             for i in range(size):
                 bp.step()
-            bp_results = get_bp_results(bp.beliefs, size)
+            bp_results = get_single_rho(bp.beliefs, size)
             bp_end_time = time.perf_counter()
 
             # Exact diagonalisation
@@ -46,8 +55,15 @@ def main():
             H = hamiltonian_matrix(hamiltonian)
             rho = linalg.expm(H)
             rho /= jnp.trace(rho)
-            diag_results = get_diag_results(rho, size)
+            diag_beliefs = get_diag_beliefs(rho, size)
+            diag_results = get_single_rho(diag_beliefs, size)
             diag_end_time = time.perf_counter()
+
+            trans_mag_bp.append(trans_mag(bp_results))
+            trans_mag_diag.append(trans_mag(diag_results))
+            correlation_bp.append(correlation(bp.beliefs))
+            correlation_diag.append(correlation(diag_beliefs))
+            density.append(jnp.trace(rho @ H / (-beta)) / size)
 
             total_error += result_error(bp_results, diag_results)
             if seed == 0:
@@ -56,16 +72,11 @@ def main():
 
         print("Average error:", total_error / num_experiments)
 
-
-def get_bp_results(beliefs, size):
-    results = jnp.zeros((size, MATRIX_SIZE_SINGLE, MATRIX_SIZE_SINGLE),
-                        dtype=jnp.complex64)
-    results = results.at[0].set(
-        _double_to_single_trace(beliefs[0], 1))
-    for i in range(beliefs.shape[0]):
-        results = results.at[i+1].set(
-            _double_to_single_trace(beliefs[i], 0))
-    return results
+    plt.plot(density, trans_mag_diag)
+    plt.scatter(density, trans_mag_bp)
+    plt.ylabel("M_x")
+    plt.xlabel("<H>/N")
+    plt.show()
 
 
 def get_diag_results(rho, size):
@@ -76,8 +87,16 @@ def get_diag_results(rho, size):
     return results
 
 
-def hamiltonian_setup(size: jnp.int32, coef: jnp.complex64,
-                      seed: jnp.int32) -> Hamiltonian:
+def get_diag_beliefs(rho, size):
+    results = jnp.zeros((size - 1, MATRIX_SIZE_DOUBLE, MATRIX_SIZE_DOUBLE),
+                        dtype=jnp.complex64)
+    for i in range(size - 1):
+        results = results.at[i].set(rdm(rho, partial_dim=2, pos=i))
+    return results
+
+
+def hamiltonian_setup(size: jnp.int32, beta: jnp.float32,
+                      coef: jnp.float32, seed: jnp.int32) -> Hamiltonian:
     """
     TODO
     """
@@ -85,7 +104,7 @@ def hamiltonian_setup(size: jnp.int32, coef: jnp.complex64,
     # key = random.key(seed)
     # num_values = 2 * size - 1
     # coef_mod = random.normal(key, (2 * num_values,))
-    ham = Hamiltonian(size, beta=1)
+    ham = Hamiltonian(size, beta)
     for i in range(size):
         ham.set_param_single(i, Pauli.X, -1.05)
         ham.set_param_single(i, Pauli.Z, 0.5)

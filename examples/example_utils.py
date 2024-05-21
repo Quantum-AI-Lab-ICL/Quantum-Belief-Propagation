@@ -2,6 +2,8 @@ import jax.numpy as jnp
 import jax.typing
 from const import MATRIX_SIZE_SINGLE
 from hamiltonian import Hamiltonian
+from utils import _double_to_single_trace
+from pauli import Pauli, _matrix_X, _pauli_matrix_2d
 
 
 def hamiltonian_matrix(ham: Hamiltonian) -> jax.typing.ArrayLike:
@@ -89,3 +91,36 @@ def rdm(rho, partial_dim, pos):
             result += bra_side @ rho @ ket_side
 
     return result
+
+
+def get_single_rho(beliefs, size):
+    results = jnp.zeros((size, MATRIX_SIZE_SINGLE, MATRIX_SIZE_SINGLE),
+                        dtype=jnp.complex64)
+    results = results.at[0].set(
+        _double_to_single_trace(beliefs[0], 1))
+    for i in range(beliefs.shape[0]):
+        results = results.at[i+1].set(
+            _double_to_single_trace(beliefs[i], 0))
+    return results
+
+
+def trans_mag(single_rho):
+    """
+    TODO
+    """
+
+    result = 0
+    for i in range(single_rho.shape[0]):
+        result += jnp.trace(single_rho[i] @ _matrix_X())
+    return result / single_rho.shape[0]
+
+
+def correlation(double_rho):
+    """
+    TODO
+    """
+
+    result = 0
+    for i in range(double_rho.shape[0]):
+        result += jnp.trace(double_rho[i] @ _pauli_matrix_2d(Pauli.Z, Pauli.Z))
+    return result / double_rho.shape[0]
