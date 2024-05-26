@@ -23,7 +23,7 @@ class Hamiltonian:
                                         dtype=jnp.complex64)
         self._reset_partial_hamiltonians()
 
-    def set_param_single(self, index: int, pauli: Pauli, value: int):
+    def set_param_single(self, index: int, pauli: Pauli, value: jnp.complex64):
         """
         TODO
         """
@@ -33,7 +33,7 @@ class Hamiltonian:
             self._params_single.at[index, pauli_index].set(-self.beta * value)
 
     def set_param_double(self, index: int, pauli_0: Pauli, pauli_1: Pauli,
-                         value: int):
+                         value: jnp.complex64):
         """
         TODO
         """
