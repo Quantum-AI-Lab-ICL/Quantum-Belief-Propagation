@@ -4,7 +4,7 @@ import jax.typing
 from jax import Array
 
 
-def _bra_0():
+def _bra_0() -> Array:
     """
     TODO
     """
@@ -12,7 +12,7 @@ def _bra_0():
     return jnp.array([[1, 0]], dtype=jnp.complex64)
 
 
-def _bra_1():
+def _bra_1() -> Array:
     """
     TODO
     """
@@ -20,7 +20,7 @@ def _bra_1():
     return jnp.array([[0, 1]], dtype=jnp.complex64)
 
 
-def _ket_0():
+def _ket_0() -> Array:
     """
     TODO
     """
@@ -28,7 +28,7 @@ def _ket_0():
     return jnp.array([[1], [0]], dtype=jnp.complex64)
 
 
-def _ket_1():
+def _ket_1() -> Array:
     """
     TODO
     """
@@ -56,11 +56,21 @@ def _double_to_single_trace(rho_double: jax.typing.ArrayLike,
 
 def _normalise(rho: jax.typing.ArrayLike) -> Array:
     """
-    TODO
+    Normalise operator so that its trace is 1
     """
 
     rho /= jnp.trace(rho)
     return rho
+
+
+def tensor_product(operators: jax.typing.ArrayLike) -> Array:
+    """
+    Calculate the tensor product of the operators.
+    """
+
+    accumulator = jnp.array(1.0, dtype=jnp.complex64)
+    [accumulator := jnp.kron(accumulator, x) for x in operators]
+    return accumulator
 
 
 def _logmh(rho: jax.typing.ArrayLike) -> Array:

@@ -3,7 +3,7 @@ import jax.typing
 from const import MATRIX_SIZE_SINGLE
 from hamiltonian import Hamiltonian
 from utils import _double_to_single_trace
-from pauli import Pauli, _matrix_X, _pauli_matrix_2d
+from pauli import CompositePauliMatrix, Pauli, _matrix_X, _pauli_matrix_2d
 
 
 def hamiltonian_matrix(ham: Hamiltonian) -> jax.typing.ArrayLike:
@@ -98,9 +98,13 @@ def get_single_rho(beliefs, size):
                         dtype=jnp.complex64)
     results = results.at[0].set(
         _double_to_single_trace(beliefs[0], 1))
-    for i in range(beliefs.shape[0]):
-        results = results.at[i+1].set(
-            _double_to_single_trace(beliefs[i], 0))
+    results = results.at[size-1].set(
+        _double_to_single_trace(beliefs[size-2], 0))
+    for i in range(1, beliefs.shape[0]):
+        results = results.at[i].set(
+            (_double_to_single_trace(beliefs[i-1], 0) +
+             _double_to_single_trace(beliefs[i], 1)) / 2
+        )
     return results
 
 
@@ -124,3 +128,39 @@ def correlation(double_rho):
     for i in range(double_rho.shape[0]):
         result += jnp.trace(double_rho[i] @ _pauli_matrix_2d(Pauli.Z, Pauli.Z))
     return result / double_rho.shape[0]
+
+
+def matrix_3x3(x_coef: jnp.int32, zz_coef: jnp.int32):
+    """
+    TODO
+    """
+    size = 9
+    matrix = jnp.zeros((2**size, 2**size), dtype=jnp.complex64)
+    for i in range(size):
+        matrix += x_coef * x_component(size, i).get_matrix()
+    edges = {
+        (0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7), (7, 8),
+        (0, 5), (1, 4), (3, 8), (4, 7)
+    }
+    for ixs in edges:
+        matrix += zz_coef * zz_component(size, ixs[0], ixs[1]).get_matrix()
+    return matrix
+
+
+def x_component(size: jnp.int32, ix: jnp.int32):
+    """
+    TODO
+    """
+    cpm = CompositePauliMatrix(size)
+    cpm.set_pauli(ix, Pauli.X)
+    return cpm
+
+
+def zz_component(size: jnp.int32, ix1: jnp.int32, ix2: jnp.int32):
+    """
+    TODO
+    """
+    cpm = CompositePauliMatrix(size)
+    cpm.set_pauli(ix1, Pauli.Z)
+    cpm.set_pauli(ix2, Pauli.Z)
+    return cpm
