@@ -10,24 +10,24 @@ class GridHamiltonian:
     TODO
     """
 
-    def __init__(self, rowsize: jnp.int32, colsize: jnp.int32,
+    def __init__(self, numrows: jnp.int32, numcols: jnp.int32,
                  beta: jnp.complex64):
         """
         TODO
         """
 
-        self.rowsize = rowsize
-        self.colsize = colsize
-        self._params_single = jnp.zeros((rowsize,
-                                         colsize,
+        self.numrows = numrows
+        self.numcols = numcols
+        self._params_single = jnp.zeros((numrows,
+                                         numcols,
                                          NUM_PARAMS_SINGLE),
                                         dtype=jnp.complex64)
-        self._params_double_row = jnp.zeros((rowsize,
-                                             colsize - 1,
+        self._params_double_row = jnp.zeros((numrows,
+                                             numcols - 1,
                                              NUM_PARAMS_DOUBLE),
                                             dtype=jnp.complex64)
-        self._params_double_col = jnp.zeros((colsize,
-                                             rowsize - 1,
+        self._params_double_col = jnp.zeros((numcols,
+                                             numrows - 1,
                                              NUM_PARAMS_DOUBLE),
                                             dtype=jnp.complex64)
         self._reset_partial_hamiltonians()
@@ -72,13 +72,13 @@ class GridHamiltonian:
         TODO
         """
 
-        self.hams_row = jnp.zeros((self.rowsize,
-                                   self.colsize - 1,
+        self.hams_row = jnp.zeros((self.numrows,
+                                   self.numcols - 1,
                                    MATRIX_SIZE_DOUBLE,
                                    MATRIX_SIZE_DOUBLE),
                                   dtype=jnp.complex64)
-        self.hams_col = jnp.zeros((self.colsize,
-                                   self.rowsize - 1,
+        self.hams_col = jnp.zeros((self.numcols,
+                                   self.numrows - 1,
                                    MATRIX_SIZE_DOUBLE,
                                    MATRIX_SIZE_DOUBLE),
                                   dtype=jnp.complex64)
@@ -90,16 +90,16 @@ class GridHamiltonian:
 
         self._reset_partial_hamiltonians()
 
-        hams_single = jnp.zeros((self.rowsize,
-                                 self.colsize,
+        hams_single = jnp.zeros((self.numrows,
+                                 self.numcols,
                                  MATRIX_SIZE_SINGLE,
                                  MATRIX_SIZE_SINGLE),
                                 dtype=jnp.complex64)
 
         pauli_matrices = (Pauli.X, Pauli.Y, Pauli.Z)
 
-        for r in range(self.rowsize):
-            for c in range(self.colsize):
+        for r in range(self.numrows):
+            for c in range(self.numcols):
                 for pauli in pauli_matrices:
                     hams_single = \
                         hams_single.at[r, c].add(
@@ -108,8 +108,8 @@ class GridHamiltonian:
                         )
 
         # Rows
-        for r in range(self.rowsize):
-            for c in range(self.colsize - 1):
+        for r in range(self.numrows):
+            for c in range(self.numcols - 1):
                 self.hams_row = \
                     self.hams_row.at[r, c].add(
                         jnp.kron(self._weighted_ham(hams_single, r, c),
@@ -132,15 +132,22 @@ class GridHamiltonian:
         """
 
         num_edges = 4
-        if rowindex == 0 or rowindex == self.rowsize - 1:
+        if rowindex == 0 or rowindex == self.numrows - 1:
             num_edges -= 1
-        if colindex == 0 or colindex == self.colsize - 1:
+        if colindex == 0 or colindex == self.numcols - 1:
             num_edges -= 1
         return hams_single[rowindex, colindex] / num_edges
 
-    def get_partial_hamiltonian(self, index):
+    def get_partial_ham_row(self, rowindex, edgeindex):
         """
         TODO
         """
 
-        return self.hamiltonians[index]
+        return self.hams_row[rowindex, edgeindex]
+
+    def get_partial_ham_col(self, colindex, edgeindex):
+        """
+        TODO
+        """
+
+        return self.hams_col[colindex, edgeindex]
