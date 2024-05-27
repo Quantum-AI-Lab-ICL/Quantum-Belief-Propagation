@@ -49,14 +49,14 @@ class GridBeliefPropagator:
                 self.beliefs_row = \
                     self.beliefs_row.at[r, c].set(jnp.eye(4))
                 self._msg_from_row = \
-                    self.beliefs_row.at[r, c].set(jnp.eye(2))
+                    self._msg_from_row.at[r, c].set(jnp.eye(2))
 
         for c in range(grid_ham.numcols):
             for r in range(grid_ham.numrows - 1):
                 self.beliefs_col = \
                     self.beliefs_col.at[c, r].set(jnp.eye(4))
                 self._msg_from_col = \
-                    self.beliefs_col.at[c, r].set(jnp.eye(2))
+                    self._msg_from_col.at[c, r].set(jnp.eye(2))
 
     def step(self):
         """
@@ -96,6 +96,9 @@ class GridBeliefPropagator:
                                     _logmh(tr_belief) +
                                     _logmh(inv_inc_msg)
                                 )))
+                    else:
+                        new_msg_from_row = \
+                            new_msg_from_row.at[r, c, i].set(jnp.eye(2))
 
         for c in range(self._grid_ham.numcols):
             for r in range(self._grid_ham.numrows - 1):
@@ -117,6 +120,9 @@ class GridBeliefPropagator:
                                     _logmh(tr_belief) +
                                     _logmh(inv_inc_msg)
                                 )))
+                    else:
+                        new_msg_from_col = \
+                            new_msg_from_col.at[c, r, i].set(jnp.eye(2))
 
         self._msg_from_row = new_msg_from_row
         self._msg_from_col = new_msg_from_col
@@ -170,7 +176,7 @@ class GridBeliefPropagator:
                     )))
 
     def _reverse_index(self, index):
-        return index + (NUM_NEIGHBOURS / 2) % NUM_NEIGHBOURS
+        return index + (NUM_NEIGHBOURS // 2) % NUM_NEIGHBOURS
 
     def _find_index(self, number, primary, secondary):
         match number:
@@ -189,8 +195,8 @@ class GridBeliefPropagator:
 
     def _check_index(self, is_row, primary, secondary):
         if is_row:
-            return (primary >= 0 and primary < self.grid_ham.numrows) \
-                and (secondary >= 0 and secondary < self.grid_ham.numcols - 1)
+            return (primary >= 0 and primary < self._grid_ham.numrows) \
+                and (secondary >= 0 and secondary < self._grid_ham.numcols - 1)
         else:
-            return (primary >= 0 and primary < self.grid_ham.numcols) \
-                and (secondary >= 0 and secondary < self.grid_ham.numrows - 1)
+            return (primary >= 0 and primary < self._grid_ham.numcols) \
+                and (secondary >= 0 and secondary < self._grid_ham.numrows - 1)

@@ -18,6 +18,7 @@ class GridHamiltonian:
 
         self.numrows = numrows
         self.numcols = numcols
+        self.beta = beta
         self._params_single = jnp.zeros((numrows,
                                          numcols,
                                          NUM_PARAMS_SINGLE),
@@ -122,7 +123,26 @@ class GridHamiltonian:
                         pauli_index = _parse_pauli_index(pauli_0, pauli_1)
                         self.hams_row = \
                             self.hams_row.at[r, c].add(
-                                self._params_double[r, c, pauli_index] *
+                                self._params_double_row[r, c, pauli_index] *
+                                _pauli_matrix_2d(pauli_0, pauli_1)
+                            )
+
+        # Cols
+        for c in range(self.numcols):
+            for r in range(self.numrows - 1):
+                self.hams_col = \
+                    self.hams_col.at[c, r].add(
+                        jnp.kron(self._weighted_ham(hams_single, r, c),
+                                 jnp.eye(2)) +
+                        jnp.kron(jnp.eye(2),
+                                 self._weighted_ham(hams_single, r+1, c))
+                    )
+                for pauli_0 in pauli_matrices:
+                    for pauli_1 in pauli_matrices:
+                        pauli_index = _parse_pauli_index(pauli_0, pauli_1)
+                        self.hams_col = \
+                            self.hams_col.at[c, r].add(
+                                self._params_double_row[c, r, pauli_index] *
                                 _pauli_matrix_2d(pauli_0, pauli_1)
                             )
 
