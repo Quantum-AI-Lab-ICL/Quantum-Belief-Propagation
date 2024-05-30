@@ -126,7 +126,7 @@ def correlation(double_rho):
 
     result = 0
     for i in range(double_rho.shape[0]):
-        result += jnp.trace(double_rho[i] @ _pauli_matrix_2d(Pauli.Z, Pauli.Z))
+        result += jnp.trace(double_rho[i] @ _pauli_matrix_2d(Pauli.X, Pauli.X))
     return result / double_rho.shape[0]
 
 
