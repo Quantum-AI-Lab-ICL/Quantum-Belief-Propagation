@@ -147,6 +147,25 @@ def matrix_3x3(x_coef: jnp.int32, zz_coef: jnp.int32):
     return matrix
 
 
+def matrix_4x4(x_coef: jnp.int32, zz_coef: jnp.int32):
+    """
+    TODO
+    """
+    size = 16
+    matrix = jnp.zeros((2**size, 2**size), dtype=jnp.complex64)
+    for i in range(size):
+        matrix += x_coef * x_component(size, i).get_matrix()
+    edges = {
+        (0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7), (7, 8),
+        (8, 9), (9, 10), (10, 11), (11, 12), (12, 13), (13, 14), (14, 15),
+        (0, 7), (1, 6), (2, 5), (6, 9), (5, 10), (4, 11), (10, 13), (9, 14),
+        (8, 15)
+    }
+    for ixs in edges:
+        matrix += zz_coef * zz_component(size, ixs[0], ixs[1]).get_matrix()
+    return matrix
+
+
 def x_component(size: jnp.int32, ix: jnp.int32):
     """
     TODO

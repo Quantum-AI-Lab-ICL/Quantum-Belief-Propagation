@@ -106,7 +106,7 @@ class LatticeBeliefPropagator:
             if 0 <= ix0 and ix0 < beliefs.shape[0] \
                     and 0 <= ix1 and ix1 < beliefs.shape[1]:
                 return _double_to_single_trace(beliefs[ix0, ix1], trace_id)
-            return jnp.eye(2) / 2
+            return jnp.eye(2)
 
         def mean_log_trace(list_trace):
             sum_trace = jnp.zeros((2, 2), dtype=jnp.complex64)
