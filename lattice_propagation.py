@@ -189,3 +189,18 @@ class LatticeBeliefPropagator:
                         _logmh(jnp.kron(self._msg_up_col[c, r], jnp.eye(2))) +
                         _logmh(jnp.kron(jnp.eye(2), self._msg_down_col[c, r]))
                     )))
+
+    def mean_single_belief(self, row, col):
+        acc = jnp.zeros((2, 2), dtype=jnp.complex64)
+        count = 0
+        for c, trace_id in [(col - 1, 0), (col, 1)]:
+            if 0 <= c and c < self.beliefs_row.shape[1]:
+                acc += _double_to_single_trace(
+                    self.beliefs_row[row, c], trace_id)
+                count += 1
+        for r, trace_id in [(row - 1, 0), (row, 1)]:
+            if 0 <= r and r < self.beliefs_col.shape[1]:
+                acc += _double_to_single_trace(
+                    self.beliefs_col[col, r], trace_id)
+                count += 1
+        return acc / count
