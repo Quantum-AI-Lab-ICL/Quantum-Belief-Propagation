@@ -10,6 +10,20 @@ from utils import _double_to_single_trace, _logmh, _normalise
 NUM_NEIGHBOURS = 6
 
 
+def checked_logmh_inv(msgs, ix0, ix1):
+    if 0 <= ix0 and ix0 < msgs.shape[0] \
+            and 0 <= ix1 and ix1 < msgs.shape[1]:
+        return _logmh(linalg.inv(msgs[ix0, ix1]))
+    return jnp.zeros((2, 2), dtype=jnp.complex64)
+
+
+def checked_logmh_trace(beliefs, ix0, ix1, trace_id):
+    if 0 <= ix0 and ix0 < beliefs.shape[0] \
+            and 0 <= ix1 and ix1 < beliefs.shape[1]:
+        return _logmh(_double_to_single_trace(beliefs[ix0, ix1], trace_id))
+    return jnp.zeros((2, 2), dtype=jnp.complex64)
+
+
 class LatticeBeliefPropagator:
     """
     TODO
@@ -96,89 +110,68 @@ class LatticeBeliefPropagator:
                                       MATRIX_SIZE_SINGLE),
                                      dtype=jnp.complex64)
 
-        def checked_logmh_inv(msgs, ix0, ix1):
-            if 0 <= ix0 and ix0 < msgs.shape[0] \
-                    and 0 <= ix1 and ix1 < msgs.shape[1]:
-                return _logmh(linalg.inv(msgs[ix0, ix1]))
-            return jnp.zeros((2, 2), dtype=jnp.complex64)
-
-        def checked_trace(beliefs, ix0, ix1, trace_id):
-            if 0 <= ix0 and ix0 < beliefs.shape[0] \
-                    and 0 <= ix1 and ix1 < beliefs.shape[1]:
-                return _double_to_single_trace(beliefs[ix0, ix1], trace_id)
-            return None
-
-        def mean_log_trace(list_trace):
-            sum_trace = jnp.zeros((2, 2), dtype=jnp.complex64)
-            count = 0
-            for t in list_trace:
-                if t is not None:
-                    sum_trace += _logmh(t)
-                    count += 1
-            return sum_trace
-
         for r in range(self._lat_ham.numrows):
             for c in range(self._lat_ham.numcols - 1):
-                up_mean_trace = mean_log_trace([
-                    checked_trace(self.beliefs_row, r, c-1, 0),
-                    checked_trace(self.beliefs_col, c, r-1, 0),
-                    checked_trace(self.beliefs_col, c, r, 1),
-                ])
-                new_msg_up_row = \
-                    new_msg_up_row.at[r, c].set(_normalise(linalg.expm(
-                        up_mean_trace +
-                        checked_logmh_inv(self._msg_down_row, r, c-1) +
-                        checked_logmh_inv(self._msg_down_col, c, r-1) +
-                        checked_logmh_inv(self._msg_up_col, c, r)
-                    )))
-
-                down_mean_trace = mean_log_trace([
-                    checked_trace(self.beliefs_row, r, c+1, 1),
-                    checked_trace(self.beliefs_col, c+1, r, 1),
-                    checked_trace(self.beliefs_col, c+1, r-1, 0),
-                ])
-                new_msg_down_row = \
-                    new_msg_down_row.at[r, c].set(_normalise(linalg.expm(
-                        down_mean_trace +
-                        checked_logmh_inv(self._msg_up_row, r, c+1) +
-                        checked_logmh_inv(self._msg_up_col, c+1, r) +
-                        checked_logmh_inv(self._msg_down_col, c+1, r-1)
-                    )))
+                new_msg_up_row = new_msg_up_row.at[r, c].set(
+                    self._compute_new_msg_up_row(r, c))
+                new_msg_down_row = new_msg_down_row.at[r, c].set(
+                    self._compute_new_msg_down_row(r, c))
 
         for c in range(self._lat_ham.numcols):
             for r in range(self._lat_ham.numrows - 1):
-
-                up_mean_trace = mean_log_trace([
-                    checked_trace(self.beliefs_col, c, r-1, 0),
-                    checked_trace(self.beliefs_row, r, c-1, 0),
-                    checked_trace(self.beliefs_row, r, c, 1),
-                ])
-                new_msg_up_col = \
-                    new_msg_up_col.at[c, r].set(_normalise(linalg.expm(
-                        up_mean_trace +
-                        checked_logmh_inv(self._msg_down_col, c, r-1) +
-                        checked_logmh_inv(self._msg_down_row, r, c-1) +
-                        checked_logmh_inv(self._msg_up_row, r, c)
-                    )))
-
-                down_mean_trace = mean_log_trace([
-                    checked_trace(self.beliefs_col, c, r+1, 1),
-                    checked_trace(self.beliefs_row, r+1, c, 1),
-                    checked_trace(self.beliefs_row, r+1, c-1, 0),
-                ])
-                new_msg_down_col = \
-                    new_msg_down_col.at[c, r].set(_normalise(linalg.expm(
-                        down_mean_trace +
-                        checked_logmh_inv(self._msg_up_col, c, r+1) +
-                        checked_logmh_inv(self._msg_up_row, r+1, c) +
-                        checked_logmh_inv(self._msg_down_row, r+1, c-1)
-                    )))
+                new_msg_up_col = new_msg_up_col.at[c, r].set(
+                    self._compute_new_msg_up_col(c, r))
+                new_msg_down_col = new_msg_down_col.at[c, r].set(
+                    self._compute_new_msg_down_col(c, r))
 
         self._msg_up_row = new_msg_up_row
         self._msg_down_row = new_msg_down_row
         self._msg_up_col = new_msg_up_col
         self._msg_down_col = new_msg_down_col
 
+        self._compute_new_beliefs()
+
+    def _compute_new_msg_up_row(self, r, c):
+        return _normalise(linalg.expm(
+            checked_logmh_trace(self.beliefs_row, r, c-1, 0) +
+            checked_logmh_trace(self.beliefs_col, c, r-1, 0) +
+            checked_logmh_trace(self.beliefs_col, c, r, 1) +
+            checked_logmh_inv(self._msg_down_row, r, c-1) +
+            checked_logmh_inv(self._msg_down_col, c, r-1) +
+            checked_logmh_inv(self._msg_up_col, c, r)
+        ))
+
+    def _compute_new_msg_down_row(self, r, c):
+        return _normalise(linalg.expm(
+            checked_logmh_trace(self.beliefs_row, r, c+1, 1) +
+            checked_logmh_inv(self._msg_up_row, r, c+1) +
+            checked_logmh_trace(self.beliefs_col, c+1, r, 1) +
+            checked_logmh_inv(self._msg_up_col, c+1, r) +
+            checked_logmh_trace(self.beliefs_col, c+1, r-1, 0) +
+            checked_logmh_inv(self._msg_down_col, c+1, r-1)
+        ))
+
+    def _compute_new_msg_up_col(self, c, r):
+        return _normalise(linalg.expm(
+            checked_logmh_trace(self.beliefs_col, c, r-1, 0) +
+            checked_logmh_inv(self._msg_down_col, c, r-1) +
+            checked_logmh_trace(self.beliefs_row, r, c-1, 0) +
+            checked_logmh_inv(self._msg_down_row, r, c-1) +
+            checked_logmh_trace(self.beliefs_row, r, c, 1) +
+            checked_logmh_inv(self._msg_up_row, r, c)
+        ))
+
+    def _compute_new_msg_down_col(self, c, r):
+        return _normalise(linalg.expm(
+            checked_logmh_trace(self.beliefs_col, c, r+1, 1) +
+            checked_logmh_inv(self._msg_up_col, c, r+1) +
+            checked_logmh_trace(self.beliefs_row, r+1, c, 1) +
+            checked_logmh_inv(self._msg_up_row, r+1, c) +
+            checked_logmh_trace(self.beliefs_row, r+1, c-1, 0) +
+            checked_logmh_inv(self._msg_down_row, r+1, c-1)
+        ))
+
+    def _compute_new_beliefs(self):
         for r in range(self._lat_ham.numrows):
             for c in range(self._lat_ham.numcols - 1):
                 self.beliefs_row = \
