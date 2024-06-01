@@ -1,3 +1,4 @@
+import jax
 import jax.numpy as jnp
 from jax.scipy import linalg
 
@@ -6,10 +7,11 @@ from lattice_propagation import LatticeBeliefPropagator
 from pauli import Pauli
 from utils import _double_to_single_trace
 
-from examples.example_utils import rdm, matrix_4x4, get_single_rho
+from examples.example_utils import rdm, matrix_3x3, get_single_rho
 
 
 if __name__ == "__main__":
+    jax.config.update("jax_platform_name", "cpu")
     x_coef = -3
     zz_coef = 1
     beta = 1
@@ -34,7 +36,7 @@ if __name__ == "__main__":
     b00 = _double_to_single_trace(propagator.beliefs_row[0, 0], 1)
     b01 = _double_to_single_trace(propagator.beliefs_row[0, 1], 1)
     b02 = _double_to_single_trace(propagator.beliefs_row[0, 1], 0)
-    # b10 = _double_to_single_trace(propagator.beliefs_row[1, 0], 1)
+    # b10 = _double_tosingle_trace(propagator.beliefs_row[1, 0], 1)
     # b11 = _double_to_single_trace(propagator.beliefs_row[1, 1], 1)
     # b12 = _double_to_single_trace(propagator.beliefs_row[1, 1], 0)
     # b20 = _double_to_single_trace(propagator.beliefs_row[2, 0], 1)
@@ -45,7 +47,7 @@ if __name__ == "__main__":
     # print(_double_to_single_trace(propagator.beliefs_row[1, 1], 1))
     # print(_double_to_single_trace(propagator.beliefs_row[1, 1], 0))
 
-    H = matrix_4x4(x_coef, zz_coef)
+    H = matrix_3x3(x_coef, zz_coef)
     rho = linalg.expm(-H)
     rho /= jnp.trace(rho)
     print(jnp.linalg.norm(b00 - rdm(rho, 1, 0)))

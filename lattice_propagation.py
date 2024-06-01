@@ -106,7 +106,7 @@ class LatticeBeliefPropagator:
             if 0 <= ix0 and ix0 < beliefs.shape[0] \
                     and 0 <= ix1 and ix1 < beliefs.shape[1]:
                 return _double_to_single_trace(beliefs[ix0, ix1], trace_id)
-            return jnp.eye(2)
+            return None
 
         def mean_log_trace(list_trace):
             sum_trace = jnp.zeros((2, 2), dtype=jnp.complex64)
@@ -115,7 +115,7 @@ class LatticeBeliefPropagator:
                 if t is not None:
                     sum_trace += _logmh(t)
                     count += 1
-            return sum_trace / count
+            return sum_trace
 
         for r in range(self._lat_ham.numrows):
             for c in range(self._lat_ham.numcols - 1):
@@ -124,11 +124,6 @@ class LatticeBeliefPropagator:
                     checked_trace(self.beliefs_col, c, r-1, 0),
                     checked_trace(self.beliefs_col, c, r, 1),
                 ])
-                print("msg_components")
-                print(up_mean_trace)
-                print(checked_logmh_inv(self._msg_down_row, r, c-1))
-                print(checked_logmh_inv(self._msg_down_col, c, r-1))
-                print(checked_logmh_inv(self._msg_up_col, c, r))
                 new_msg_up_row = \
                     new_msg_up_row.at[r, c].set(_normalise(linalg.expm(
                         up_mean_trace +
@@ -201,10 +196,3 @@ class LatticeBeliefPropagator:
                         _logmh(jnp.kron(self._msg_up_col[c, r], jnp.eye(2))) +
                         _logmh(jnp.kron(jnp.eye(2), self._msg_down_col[c, r]))
                     )))
-
-        print("row up", self._msg_up_row)
-        print("row down", self._msg_down_row)
-        print("col up", self._msg_up_col)
-        print("col down", self._msg_down_col)
-        # print("row beliefs", self.beliefs_row)
-        # print("col beliefs", self.beliefs_col)

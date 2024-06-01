@@ -27,7 +27,7 @@ if __name__ == "__main__":
     lat_ham.compute_partial_hamiltonians()
 
     propagator = LatticeBeliefPropagator(lat_ham)
-    for i in range(1):
+    for i in range(9):
         print("step", i)
         propagator.step()
 
