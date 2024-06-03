@@ -11,7 +11,7 @@ from examples.example_utils import rdm, matrix_3x3, get_single_rho
 
 if __name__ == "__main__":
     x_coef = -3
-    zz_coef = 1
+    zz_coef = -1
     beta = 1
 
     lat_ham = LatticeHamiltonian(3, 3, 1)

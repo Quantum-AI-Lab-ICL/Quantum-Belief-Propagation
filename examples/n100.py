@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 from propagation import BeliefPropagator
 from hamiltonian import Hamiltonian
 from pauli import Pauli
-from examples.example_utils import hamiltonian_matrix, rdm, \
-    get_single_rho, trans_mag, correlation
+from examples.example_utils import get_single_rho, trans_mag, correlation
 
 
 def main():

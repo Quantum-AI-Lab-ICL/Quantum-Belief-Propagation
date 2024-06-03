@@ -130,6 +130,19 @@ def correlation(double_rho):
     return result / double_rho.shape[0]
 
 
+def correlation_spin_2d(double_rho):
+    """
+    TODO
+    """
+
+    result = 0
+    for i in range(double_rho.shape[0]):
+        for j in range(double_rho.shape[1]):
+            result += jnp.trace(
+                double_rho[i, j] @ _pauli_matrix_2d(Pauli.Z, Pauli.Z))
+    return result / (double_rho.shape[0] * double_rho.shape[1])
+
+
 def matrix_3x3(x_coef: jnp.int32, zz_coef: jnp.int32):
     """
     TODO
