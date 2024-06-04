@@ -134,10 +134,10 @@ class LatticeBeliefPropagator:
     def _compute_new_msg_up_row(self, r, c):
         return _normalise(linalg.expm(
             checked_logmh_trace(self.beliefs_row, r, c-1, 0) +
-            checked_logmh_trace(self.beliefs_col, c, r-1, 0) +
-            checked_logmh_trace(self.beliefs_col, c, r, 1) +
             checked_logmh_inv(self._msg_down_row, r, c-1) +
+            checked_logmh_trace(self.beliefs_col, c, r-1, 0) +
             checked_logmh_inv(self._msg_down_col, c, r-1) +
+            checked_logmh_trace(self.beliefs_col, c, r, 1) +
             checked_logmh_inv(self._msg_up_col, c, r)
         ))
 

@@ -152,9 +152,13 @@ class LatticeHamiltonian:
         """
 
         num_edges = 4
-        if rowindex == 0 or rowindex == self.numrows - 1:
+        if rowindex == 0:
             num_edges -= 1
-        if colindex == 0 or colindex == self.numcols - 1:
+        if rowindex == self.numrows - 1:
+            num_edges -= 1
+        if colindex == 0:
+            num_edges -= 1
+        if colindex == self.numcols - 1:
             num_edges -= 1
         return hams_single[rowindex, colindex] / num_edges
 

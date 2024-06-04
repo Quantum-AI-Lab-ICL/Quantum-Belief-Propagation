@@ -34,7 +34,7 @@ def main():
         correlation_diag = []
         density = []
 
-    for size in range(3, 12):
+    for size in range(3, 5):
         print(f"Number of particles: {size}")
         num_experiments = 1
         total_error = 0
