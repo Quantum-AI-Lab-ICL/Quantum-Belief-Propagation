@@ -24,6 +24,23 @@ def checked_logmh_trace(beliefs, ix0, ix1, trace_id):
     return jnp.zeros((2, 2), dtype=jnp.complex64)
 
 
+def checked_partial_ham(partial_hams, ix0, ix1):
+    if 0 <= ix0 and ix0 < partial_hams.shape[0] \
+            and 0 <= ix1 and ix1 < partial_hams.shape[1]:
+        return partial_hams[ix0, ix1]
+    return jnp.zeros((4, 4), dtype=jnp.complex64)
+
+
+def checked_logmh_tensor(msgs, ix0, ix1, tensor_id):
+    if 0 <= ix0 and ix0 < msgs.shape[0] \
+            and 0 <= ix1 and ix1 < msgs.shape[1]:
+        if tensor_id == 0:
+            return _logmh(jnp.kron(msgs[ix0, ix1], jnp.eye(2)))
+        else:
+            return _logmh(jnp.kron(jnp.eye(2), msgs[ix0, ix1]))
+    return jnp.zeros((4, 4), dtype=jnp.complex64)
+
+
 class LatticeBeliefPropagator:
     """
     TODO
@@ -133,42 +150,66 @@ class LatticeBeliefPropagator:
 
     def _compute_new_msg_up_row(self, r, c):
         return _normalise(linalg.expm(
-            checked_logmh_trace(self.beliefs_row, r, c-1, 0) +
-            checked_logmh_inv(self._msg_down_row, r, c-1) +
-            checked_logmh_trace(self.beliefs_col, c, r-1, 0) +
-            checked_logmh_inv(self._msg_down_col, c, r-1) +
-            checked_logmh_trace(self.beliefs_col, c, r, 1) +
-            checked_logmh_inv(self._msg_up_col, c, r)
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_row, r, c-1) +
+                checked_logmh_tensor(self._msg_up_row, r, c-1, 0),
+                0) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_col, c, r-1) +
+                checked_logmh_tensor(self._msg_up_col, c, r-1, 0),
+                0) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_col, c, r) +
+                checked_logmh_tensor(self._msg_down_col, c, r, 1),
+                1)
         ))
 
     def _compute_new_msg_down_row(self, r, c):
         return _normalise(linalg.expm(
-            checked_logmh_trace(self.beliefs_row, r, c+1, 1) +
-            checked_logmh_inv(self._msg_up_row, r, c+1) +
-            checked_logmh_trace(self.beliefs_col, c+1, r, 1) +
-            checked_logmh_inv(self._msg_up_col, c+1, r) +
-            checked_logmh_trace(self.beliefs_col, c+1, r-1, 0) +
-            checked_logmh_inv(self._msg_down_col, c+1, r-1)
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_row, r, c+1) +
+                checked_logmh_tensor(self._msg_down_row, r, c+1, 1),
+                1) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_col, c+1, r) +
+                checked_logmh_tensor(self._msg_down_col, c+1, r, 1),
+                1) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_col, c+1, r-1) +
+                checked_logmh_tensor(self._msg_up_col, c+1, r-1, 0),
+                0)
         ))
 
     def _compute_new_msg_up_col(self, c, r):
         return _normalise(linalg.expm(
-            checked_logmh_trace(self.beliefs_col, c, r-1, 0) +
-            checked_logmh_inv(self._msg_down_col, c, r-1) +
-            checked_logmh_trace(self.beliefs_row, r, c-1, 0) +
-            checked_logmh_inv(self._msg_down_row, r, c-1) +
-            checked_logmh_trace(self.beliefs_row, r, c, 1) +
-            checked_logmh_inv(self._msg_up_row, r, c)
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_col, r, c-1) +
+                checked_logmh_tensor(self._msg_up_col, r, c-1, 0),
+                0) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_row, c, r-1) +
+                checked_logmh_tensor(self._msg_up_row, c, r-1, 0),
+                0) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_row, c, r) +
+                checked_logmh_tensor(self._msg_down_row, c, r, 1),
+                1)
         ))
 
     def _compute_new_msg_down_col(self, c, r):
         return _normalise(linalg.expm(
-            checked_logmh_trace(self.beliefs_col, c, r+1, 1) +
-            checked_logmh_inv(self._msg_up_col, c, r+1) +
-            checked_logmh_trace(self.beliefs_row, r+1, c, 1) +
-            checked_logmh_inv(self._msg_up_row, r+1, c) +
-            checked_logmh_trace(self.beliefs_row, r+1, c-1, 0) +
-            checked_logmh_inv(self._msg_down_row, r+1, c-1)
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_col, r, c+1) +
+                checked_logmh_tensor(self._msg_down_col, r, c+1, 1),
+                1) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_row, c+1, r) +
+                checked_logmh_tensor(self._msg_down_row, c+1, r, 1),
+                1) +
+            _double_to_single_trace(
+                checked_partial_ham(self._lat_ham.hams_row, c+1, r-1) +
+                checked_logmh_tensor(self._msg_up_row, c+1, r-1, 0),
+                0)
         ))
 
     def _compute_new_beliefs(self):
