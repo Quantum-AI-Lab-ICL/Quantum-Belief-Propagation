@@ -13,6 +13,8 @@ NUM_NEIGHBOURS = 6
 def checked_logmh_inv(msgs, ix0, ix1):
     if 0 <= ix0 and ix0 < msgs.shape[0] \
             and 0 <= ix1 and ix1 < msgs.shape[1]:
+        print("invert")
+        print(msgs[ix0, ix1])
         return _logmh(linalg.inv(msgs[ix0, ix1]))
     return jnp.zeros((2, 2), dtype=jnp.complex64)
 
@@ -132,6 +134,13 @@ class LatticeBeliefPropagator:
         self._compute_new_beliefs()
 
     def _compute_new_msg_up_row(self, r, c):
+        # print("Components")
+        # print(checked_logmh_trace(self.beliefs_row, r, c-1, 0))
+        # print(checked_logmh_inv(self._msg_down_row, r, c-1))
+        # print(checked_logmh_trace(self.beliefs_col, c, r-1, 0))
+        # print(checked_logmh_inv(self._msg_down_col, c, r-1))
+        # print(checked_logmh_trace(self.beliefs_col, c, r, 1))
+        # print(checked_logmh_inv(self._msg_up_col, c, r))
         return _normalise(linalg.expm(
             checked_logmh_trace(self.beliefs_row, r, c-1, 0) +
             checked_logmh_inv(self._msg_down_row, r, c-1) +

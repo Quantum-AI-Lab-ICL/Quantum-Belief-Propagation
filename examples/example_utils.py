@@ -143,6 +143,22 @@ def correlation_spin_2d(double_rho):
     return result / (double_rho.shape[0] * double_rho.shape[1])
 
 
+def matrix_2x2(x_coef: jnp.int32, zz_coef: jnp.int32):
+    """
+    TODO
+    """
+    size = 4
+    matrix = jnp.zeros((2**size, 2**size), dtype=jnp.complex64)
+    for i in range(size):
+        matrix += x_coef * x_component(size, i).get_matrix()
+    edges = {
+        (0, 1), (1, 2), (2, 3), (0, 3)
+    }
+    for ixs in edges:
+        matrix += zz_coef * zz_component(size, ixs[0], ixs[1]).get_matrix()
+    return matrix
+
+
 def matrix_3x3(x_coef: jnp.int32, zz_coef: jnp.int32):
     """
     TODO

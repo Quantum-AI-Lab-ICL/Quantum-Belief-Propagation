@@ -1,7 +1,8 @@
 import jax.numpy as jnp
-import jax.scipy.linalg as linalg
 import jax.typing
+from jax.scipy import linalg
 from jax import Array
+from jax import random
 
 
 def _bra_0() -> Array:
@@ -83,3 +84,16 @@ def _logmh(rho: jax.typing.ArrayLike) -> Array:
     result = eigvecs @ jnp.diag(log_eigvals) \
         @ jnp.conjugate(jnp.transpose(eigvecs))
     return result
+
+
+def _random_normalised_hermitian(
+        size: jnp.int32, key: jax.typing.ArrayLike) -> (Array, Array):
+    factor = 2
+    real_key, imag_key = random.split(key)
+    real = random.uniform(real_key, (size, size))
+    imag = random.uniform(imag_key, (size, size))
+    matrix = real + 1.0j * imag
+    hermitian = matrix + matrix.transpose().conjugate()
+    result = _normalise(jnp.eye(size) + factor * hermitian)
+    new_key, _ = random.split(real_key)
+    return result, new_key
