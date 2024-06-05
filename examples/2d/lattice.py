@@ -16,7 +16,7 @@ if __name__ == "__main__":
     size = 3
 
     errors = []
-    space = jnp.linspace(0, 1, 50, dtype=jnp.float32)
+    space = jnp.linspace(0, 2, 50, dtype=jnp.float32)
 
     for beta in space:
         lat_ham = LatticeHamiltonian(3, 3, beta)
@@ -56,4 +56,4 @@ if __name__ == "__main__":
     plt.xlabel("beta")
     plt.ylabel("average norm of error")
     plt.title("Error against exact solution in 3x3 matrices by beta value")
-    plt.savefig("examples/results/error_3x3_capped.png")
+    plt.savefig("examples/results/error_3x3_regularised.png")

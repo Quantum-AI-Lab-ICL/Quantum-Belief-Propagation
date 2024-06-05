@@ -13,12 +13,10 @@ NUM_NEIGHBOURS = 6
 def checked_logmh_inv(msgs, ix0, ix1):
     if 0 <= ix0 and ix0 < msgs.shape[0] \
             and 0 <= ix1 and ix1 < msgs.shape[1]:
-        print("Cond", jnp.linalg.cond(msgs[ix0, ix1]))
         msg = msgs[ix0, ix1]
         delta = 0.1 / msg
         if jnp.linalg.cond(msg) > 10:
             msg = msg + delta * jnp.eye(2)
-        print("Cond regged", jnp.linalg.cond(msg))
         return _logmh(linalg.inv(msg))
     return jnp.zeros((2, 2), dtype=jnp.complex64)
 
