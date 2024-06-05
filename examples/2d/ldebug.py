@@ -18,7 +18,7 @@ def main():
 
     errors = []
 
-    for beta in [1.4]:
+    for beta in [2]:
         lat_ham = LatticeHamiltonian(3, 3, beta)
         for r in range(size):
             for c in range(size):
