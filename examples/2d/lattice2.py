@@ -14,10 +14,10 @@ if __name__ == "__main__":
     x_coef = -3
     zz_coef = -1
     size = 2
-    # errors = []
-    # space = jnp.linspace(0, 7, 100, dtype=jnp.float32)
+    errors = []
+    space = jnp.linspace(0, 10, 100, dtype=jnp.float32)
 
-    for beta in [1.0]:
+    for beta in space:
         lat_ham = LatticeHamiltonian(size, size, beta)
         for r in range(size):
             for c in range(size):
@@ -49,11 +49,10 @@ if __name__ == "__main__":
                         propagator.mean_single_belief(r, c) -
                         exact_sol[r, c]
                     )
-        print(total_error / (size * size))
-        # errors.append(total_error / (size * size))
+        errors.append(total_error / (size * size))
 
-    # plt.plot(space, errors)
-    # plt.xlabel("beta")
-    # plt.ylabel("average norm of error")
-    # plt.title("Error against exact solution in 2x2 matrices by beta value")
-    # plt.savefig("examples/results/error_2x2_capped.png")
+    plt.plot(space, errors)
+    plt.xlabel("beta")
+    plt.ylabel("average norm of error")
+    plt.title("Error against exact solution in 2x2 matrices by beta value")
+    plt.savefig("examples/results/error_2x2_regularised_optim.png")

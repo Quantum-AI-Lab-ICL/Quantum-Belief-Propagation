@@ -56,4 +56,4 @@ if __name__ == "__main__":
     plt.xlabel("beta")
     plt.ylabel("average norm of error")
     plt.title("Error against exact solution in 3x3 matrices by beta value")
-    plt.savefig("examples/results/error_3x3_regularised.png")
+    plt.savefig("examples/results/error_3x3_regularised_optim.png")

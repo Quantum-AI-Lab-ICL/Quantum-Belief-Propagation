@@ -88,7 +88,7 @@ def _logmh(rho: jax.typing.ArrayLike) -> Array:
 
 def _random_normalised_hermitian(
         size: jnp.int32, key: jax.typing.ArrayLike) -> (Array, Array):
-    factor = 2
+    factor = 3
     real_key, imag_key = random.split(key)
     real = random.uniform(real_key, (size, size))
     imag = random.uniform(imag_key, (size, size))

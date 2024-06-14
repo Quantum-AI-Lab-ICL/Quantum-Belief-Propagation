@@ -18,7 +18,9 @@ def main():
 
     errors = []
 
-    for beta in [2]:
+    beta = 2.0
+    space = jnp.linspace(0.01, 0.1, 10)
+    for reg_factor in space:
         lat_ham = LatticeHamiltonian(3, 3, beta)
         for r in range(size):
             for c in range(size):
@@ -40,7 +42,7 @@ def main():
             for c in range(size):
                 exact_sol = exact_sol.at[r, c].set(rdm(rho, 1, r * size + c))
 
-        propagator = LatticeBeliefPropagator(lat_ham)
+        propagator = LatticeBeliefPropagator(lat_ham, reg_factor)
         for i in range(size * size):
             propagator.step()
             total_error = 0.0
@@ -51,13 +53,14 @@ def main():
                         exact_sol[r, c]
                     )
         print(total_error / (size * size))
-        # errors.append(total_error / (size * size))
+        errors.append(total_error / (size * size))
 
-    # plt.plot(space, errors)
-    # plt.xlabel("beta")
-    # plt.ylabel("average norm of error")
-    # plt.title("Error against exact solution in 3x3 matrices by beta value")
-    # plt.savefig("examples/results/error_3x3_capped.png")
+    plt.plot(space, errors)
+    plt.xlabel("Regularisation factor")
+    plt.ylabel("Average norm of error")
+    plt.title("Error against exact solution in 3x3 matrices by " +
+              "regularisation factor")
+    plt.savefig("examples/results/error_3x3_by_reg_scalar.png")
 
 
 if __name__ == "__main__":

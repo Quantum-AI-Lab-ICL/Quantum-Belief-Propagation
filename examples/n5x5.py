@@ -9,44 +9,43 @@ from examples.example_utils import get_single_rho, trans_mag, \
 
 
 def main():
-    N = 10
-    Mx = []
-    Czz = []
-    HN = []
-    for reg_factor in [0.014]:
-        for beta in jnp.linspace(0.1, 2.0, 20, dtype=jnp.float32):
-            print(beta)
-            ham = ham_setup(N, beta, -2.5, -1.0)
-            bp = LatticeBeliefPropagator(ham, reg_factor)
-            for i in range(N * N):
-                print(i)
-                bp.step()
-            single_results = single_rho(bp, N)
-            Mx.append(trans_mag(single_results))
-            Czz.append((
-                correlation_spin_2d(bp.beliefs_row) +
-                correlation_spin_2d(bp.beliefs_col)) / 2)
-            HN.append((
-                energy_expectation(bp.beliefs_row, ham.hams_row, ham.beta) +
-                energy_expectation(bp.beliefs_col, ham.hams_col, ham.beta)
-            ) / 2)
+    N = 4
+    # Mx = []
+    # Czz = []
+    # HN = []
+    beta = 2.0
+    for reg_factor in [0.05]:
+        ham = ham_setup(N, beta, -2.5, -1.0)
+        bp = LatticeBeliefPropagator(ham, reg_factor)
+        for i in range(N * N):
+            print(i)
+            bp.step()
+        # single_results = single_rho(bp, N)
+        # Mx.append(trans_mag(single_results))
+        # Czz.append((
+        #     correlation_spin_2d(bp.beliefs_row) +
+        #     correlation_spin_2d(bp.beliefs_col)) / 2)
+        # HN.append((
+        #     energy_expectation(bp.beliefs_row, ham.hams_row, ham.beta) +
+        #     energy_expectation(bp.beliefs_col, ham.hams_col, ham.beta)
+        # ) / 2)
 
-        print(Mx)
-        print(Czz)
-        print(HN)
-        plt.scatter(HN, Mx)
-        plt.title(f"Transverse magnetisation for {N}x{N} system")
-        plt.xlabel("<H>/N")
-        plt.ylabel("Mx")
-        plt.savefig(f"examples/results/n{N}x{N}_Mx_{reg_factor}.png")
-        plt.clf()
-
-        plt.scatter(HN, Czz)
-        plt.title(f"Spin-spin correlation for {N}x{N} system")
-        plt.xlabel("<H>/N")
-        plt.ylabel("Czz")
-        plt.savefig(f"examples/results/n{N}x{N}_Czz_{reg_factor}.png")
-        plt.clf()
+    # print(Mx)
+    # print(Czz)
+    # print(HN)
+    # plt.scatter(HN, Mx)
+    # plt.title(f"Transverse magnetisation for {N}x{N} system")
+    # plt.xlabel("<H>/N")
+    # plt.ylabel("Mx")
+    # plt.savefig(f"examples/results/5x5/n{N}x{N}_Mx_{reg_factor}.png")
+    # plt.clf()
+    #
+    # plt.scatter(HN, Czz)
+    # plt.title(f"Spin-spin correlation for {N}x{N} system")
+    # plt.xlabel("<H>/N")
+    # plt.ylabel("Czz")
+    # plt.savefig(f"examples/results/5x5/n{N}x{N}_Czz_{reg_factor}.png")
+    # plt.clf()
 
 
 def ham_setup(N, beta, x_coef, zz_coef):
