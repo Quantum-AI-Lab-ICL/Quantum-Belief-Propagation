@@ -1,3 +1,6 @@
+"""
+LatticeHamiltonian class for model setup in the 2D algorithm.
+"""
 import jax.numpy as jnp
 
 from const import NUM_PARAMS_SINGLE, NUM_PARAMS_DOUBLE, MATRIX_SIZE_SINGLE, \
@@ -7,13 +10,57 @@ from pauli import Pauli, _pauli_matrix, _pauli_matrix_2d, _parse_pauli_index
 
 class LatticeHamiltonian:
     """
-    TODO
+    Class representing the Hamiltonian of the quantum system in 2D arranged in
+    a lattice.
+
+    Attributes
+    ----------
+    numrows: jnp.int32
+        number of rows in the lattice
+    numcols: jnp.int32
+        number of columns in the lattice
+    beta: jnp.float32
+        beta coefficient on the Hamiltonian in the thermal state representation
+    hams_row: jax.Array
+        partial Hamiltonian matrices of the system in the row direction
+    hams_col: jax.Array
+        partial Hamiltonian matrices of the system in the column direction
+
+    Methods
+    -------
+    set_param_single
+        set the model parameter for a component of the Hamiltonian that acts on
+        a single particle
+    set_param_double_row
+        set the model parameter for a component of the Hamiltonian that acts on
+        a pair of neighbouring particles in the row direction
+    set_param_double_col
+        set the model parameter for a component of the Hamiltonian that acts on
+        a pair of neighbouring particles in the column direction
+    compute_partial_hamiltonians
+        compute the partial Hamiltonian matrices as specified in the algorithm
+    get_partial_hamiltonian_row
+        get the partial Hamiltonian matrix at a particular index in the row
+        direction
+    get_partial_hamiltonian_col
+        get the partial Hamiltonian matrix at a particular index in the column
+        direction
     """
 
     def __init__(self, numrows: jnp.int32, numcols: jnp.int32,
-                 beta: jnp.complex64):
+                 beta: jnp.float32):
         """
-        TODO
+        Initialise the LatticeHamiltonian class.
+
+        Parameters
+        ----------
+        numrows: jnp.int32
+            number of rows in the lattice
+        numcols: jnp.int32
+            number of columns in the lattice
+        beta: jnp.float32
+            beta coefficient on the Hamiltonian in the thermal state
+            representation
         """
 
         self.numrows = numrows
@@ -34,9 +81,23 @@ class LatticeHamiltonian:
         self._reset_partial_hamiltonians()
 
     def set_param_single(self, rowindex: jnp.int32, colindex: jnp.int32,
-                         pauli: Pauli, value: jnp.complex64):
+                         pauli: Pauli, value: jnp.float32):
         """
-        TODO
+        Set the model parameter for a component of the Hamiltonian that acts on
+        a single particle.
+
+        Parameters
+        ----------
+        rowindex: jnp.int32
+            index of the particle at which to set the model parameter in the
+            row direction
+        colindex: jnp.int32
+            index of the particle at which to set the model parameter in the
+            column direction
+        pauli: Pauli
+            specification of which Pauli matrix the parameter is for
+        value: jnp.float32
+            value of the parameter
         """
 
         pauli_index = pauli.value
@@ -46,9 +107,26 @@ class LatticeHamiltonian:
 
     def set_param_double_row(self, rowindex: jnp.int32, edgeindex: jnp.int32,
                              pauli_0: Pauli, pauli_1: Pauli,
-                             value: jnp.complex64):
+                             value: jnp.float32):
         """
-        TODO
+        Set the model parameter for a component of the Hamiltonian that acts on
+        a pair of neighbouring particles in the row direction.
+
+        Parameters
+        ----------
+        rowindex: jnp.int32
+            index of the particle at which to set the model parameter in the
+            row direction
+        edgeindex: jnp.int32
+            index of the edge corresponding to the pair of particles
+        pauli_0: Pauli
+            specification of which Pauli matrix the parameter is for at the
+            first particle on the edge
+        pauli_1: Pauli
+            specification of which Pauli matrix the parameter is for at the
+            second particle on the edge
+        value: jnp.float32
+            value of the parameter
         """
 
         pauli_index = _parse_pauli_index(pauli_0, pauli_1)
@@ -58,9 +136,26 @@ class LatticeHamiltonian:
 
     def set_param_double_col(self, colindex: jnp.int32, edgeindex: jnp.int32,
                              pauli_0: Pauli, pauli_1: Pauli,
-                             value: jnp.complex64):
+                             value: jnp.float32):
         """
-        TODO
+        Set the model parameter for a component of the Hamiltonian that acts on
+        a pair of neighbouring particles in the column direction.
+
+        Parameters
+        ----------
+        colindex: jnp.int32
+            index of the particle at which to set the model parameter in the
+            column direction
+        edgeindex: jnp.int32
+            index of the edge corresponding to the pair of particles
+        pauli_0: Pauli
+            specification of which Pauli matrix the parameter is for at the
+            first particle on the edge
+        pauli_1: Pauli
+            specification of which Pauli matrix the parameter is for at the
+            second particle on the edge
+        value: jnp.float32
+            value of the parameter
         """
 
         pauli_index = _parse_pauli_index(pauli_0, pauli_1)
@@ -70,7 +165,7 @@ class LatticeHamiltonian:
 
     def _reset_partial_hamiltonians(self):
         """
-        TODO
+        Reset the partial Hamiltonians.
         """
 
         self.hams_row = jnp.zeros((self.numrows,
@@ -86,7 +181,7 @@ class LatticeHamiltonian:
 
     def compute_partial_hamiltonians(self):
         """
-        TODO
+        Compute the partial Hamiltonian matrices as specified in the algorithm.
         """
 
         self._reset_partial_hamiltonians()
@@ -148,7 +243,8 @@ class LatticeHamiltonian:
 
     def _weighted_ham(self, hams_single, rowindex, colindex):
         """
-        TODO
+        Give correct weighting of component matrices for partial Hamiltonian
+        calculation.
         """
 
         num_edges = 4
@@ -164,14 +260,42 @@ class LatticeHamiltonian:
 
     def get_partial_ham_row(self, rowindex, edgeindex):
         """
-        TODO
+        Get the partial Hamiltonian matrix at a particular index in the row
+        direction.
+
+        Parameters
+        ----------
+        rowindex: jnp.int32
+            index of the particle at which to set the model parameter in the
+            row direction
+        edgeindex: jnp.int32
+            index of the edge corresponding to the pair of particles
+
+        Returns
+        -------
+        partial_hamiltonian: jax.Array
+            the partial Hamiltonian
         """
 
         return self.hams_row[rowindex, edgeindex]
 
     def get_partial_ham_col(self, colindex, edgeindex):
         """
-        TODO
+        Get the partial Hamiltonian matrix at a particular index in the column
+        direction.
+
+        Parameters
+        ----------
+        colindex: jnp.int32
+            index of the particle at which to set the model parameter in the
+            column direction
+        edgeindex: jnp.int32
+            index of the edge corresponding to the pair of particles
+
+        Returns
+        -------
+        partial_hamiltonian: jax.Array
+            the partial Hamiltonian
         """
 
         return self.hams_col[colindex, edgeindex]
