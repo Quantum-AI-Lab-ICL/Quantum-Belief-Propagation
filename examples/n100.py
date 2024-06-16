@@ -2,9 +2,8 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
 from propagation import BeliefPropagator
-from hamiltonian import Hamiltonian
-from pauli import Pauli
-from examples.example_utils import get_single_rho, trans_mag, correlation
+from examples.example_utils import get_single_rho, trans_mag, \
+    correlation, ham_setup
 
 
 def main():
@@ -43,17 +42,6 @@ def energy_expectation(double_rho, partial_ham, beta):
     for i in range(double_rho.shape[0]):
         result += jnp.trace(double_rho[i] @ partial_ham[i] / (-beta))
     return result
-
-
-def ham_setup(N, beta, x_coef, z_coef, zz_coef):
-    ham = Hamiltonian(N, beta)
-    for i in range(N):
-        ham.set_param_single(i, Pauli.X, x_coef)
-        ham.set_param_single(i, Pauli.Z, z_coef)
-    for i in range(N - 1):
-        ham.set_param_double(i, Pauli.Z, Pauli.Z, zz_coef)
-    ham.compute_partial_hamiltonians()
-    return ham
 
 
 if __name__ == "__main__":

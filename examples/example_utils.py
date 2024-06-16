@@ -1,7 +1,8 @@
 import jax.numpy as jnp
 import jax.typing
-from const import MATRIX_SIZE_SINGLE
+from const import MATRIX_SIZE_SINGLE, MATRIX_SIZE_DOUBLE
 from hamiltonian import Hamiltonian
+from lattice_hamiltonian import LatticeHamiltonian
 from utils import _double_to_single_trace
 from pauli import CompositePauliMatrix, Pauli, _matrix_X, _pauli_matrix_2d
 
@@ -212,3 +213,62 @@ def zz_component(size: jnp.int32, ix1: jnp.int32, ix2: jnp.int32):
     cpm.set_pauli(ix1, Pauli.Z)
     cpm.set_pauli(ix2, Pauli.Z)
     return cpm
+
+
+def ham_setup(N, beta, x_coef, z_coef, zz_coef):
+    ham = Hamiltonian(N, beta)
+    for i in range(N):
+        ham.set_param_single(i, Pauli.X, x_coef)
+        ham.set_param_single(i, Pauli.Z, z_coef)
+    for i in range(N - 1):
+        ham.set_param_double(i, Pauli.Z, Pauli.Z, zz_coef)
+    ham.compute_partial_hamiltonians()
+    return ham
+
+
+def lat_ham_setup(N, beta, x_coef, z_coef, zz_coef):
+    lat_ham = LatticeHamiltonian(N, N, beta)
+    for r in range(N):
+        for c in range(N):
+            lat_ham.set_param_single(r, c, Pauli.X, x_coef)
+    for r in range(N):
+        for c in range(N - 1):
+            lat_ham.set_param_double_row(r, c, Pauli.Z, Pauli.Z, zz_coef)
+    for c in range(N):
+        for r in range(N - 1):
+            lat_ham.set_param_double_col(c, r, Pauli.Z, Pauli.Z, zz_coef)
+    lat_ham.compute_partial_hamiltonians()
+    return lat_ham
+
+
+def get_diag_beliefs(rho, size):
+    results = jnp.zeros((size - 1, MATRIX_SIZE_DOUBLE, MATRIX_SIZE_DOUBLE),
+                        dtype=jnp.complex64)
+    for i in range(size - 1):
+        results = results.at[i].set(rdm(rho, partial_dim=2, pos=i))
+    return results
+
+
+def get_single_beliefs(rho, size):
+    results = jnp.zeros((size, MATRIX_SIZE_SINGLE, MATRIX_SIZE_SINGLE),
+                        dtype=jnp.complex64)
+    for i in range(size):
+        results = results.at[i].set(rdm(rho, partial_dim=1, pos=i))
+    return results
+
+
+def mean_norm(matrix_list):
+    length = matrix_list.shape[0]
+    result = 0
+    for i in range(length):
+        result += jnp.linalg.norm(matrix_list[i])
+    return result / length
+
+
+def square_lattice_single_beliefs(rho, size):
+    exact_sol = jnp.zeros((size, size, MATRIX_SIZE_SINGLE, MATRIX_SIZE_SINGLE),
+                          dtype=jnp.complex64)
+    for r in range(size):
+        for c in range(size):
+            exact_sol = exact_sol.at[r, c].set(rdm(rho, 1, r * size + c))
+    return exact_sol

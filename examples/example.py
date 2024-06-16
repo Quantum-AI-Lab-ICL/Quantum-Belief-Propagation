@@ -11,7 +11,7 @@ from hamiltonian import Hamiltonian
 from pauli import Pauli
 from propagation import BeliefPropagator
 from examples.example_utils import hamiltonian_matrix, rdm, \
-    get_single_rho, trans_mag, correlation
+    get_single_rho, trans_mag, correlation, get_diag_beliefs
 
 
 def main():
@@ -84,14 +84,6 @@ def get_diag_results(rho, size):
                         dtype=jnp.complex64)
     for i in range(size):
         results = results.at[i].set(rdm(rho, partial_dim=1, pos=i))
-    return results
-
-
-def get_diag_beliefs(rho, size):
-    results = jnp.zeros((size - 1, MATRIX_SIZE_DOUBLE, MATRIX_SIZE_DOUBLE),
-                        dtype=jnp.complex64)
-    for i in range(size - 1):
-        results = results.at[i].set(rdm(rho, partial_dim=2, pos=i))
     return results
 
 
