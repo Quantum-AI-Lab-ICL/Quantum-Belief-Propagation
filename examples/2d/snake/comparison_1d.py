@@ -1,6 +1,6 @@
+from jax.scipy import linalg
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from jax.scipy import linalg
 
 from examples.example_utils import get_single_rho, matrix_3x3, \
     ham_setup, hamiltonian_matrix, get_single_beliefs, mean_norm
