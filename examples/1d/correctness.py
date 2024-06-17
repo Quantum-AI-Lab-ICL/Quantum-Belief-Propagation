@@ -1,10 +1,10 @@
+from jax.scipy import linalg
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from jax.scipy import linalg
 
-from propagation import BeliefPropagator
 from examples.example_utils import get_single_rho, \
     ham_setup, get_diag_beliefs, hamiltonian_matrix
+from propagation import BeliefPropagator
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
 
     for size in size_range:
         ham = ham_setup(size, beta, x_coeff, z_coeff, zz_coeff)
-        bp = BeliefPropagator(ham, 1)
+        bp = BeliefPropagator(ham)
         for i in range(size):
             bp.step()
         bp_results = get_single_rho(bp.beliefs, size)
@@ -34,11 +34,12 @@ def main():
         ) / size)
 
     plt.plot(size_range, error)
-    plt.ylabel("Mean matrix norm of difference between BP and exact " +
-               "results")
+    plt.ylabel("""Mean matrix norm of difference between BP and
+               exact results""")
     plt.xlabel("Number of particles")
-    plt.title("Error against exact solution in 1D systems by " +
-              "system size")
+    plt.title("""Error against exact solution in 1D systems by
+              system size""")
+    plt.tight_layout()
     plt.savefig("examples/results/1d/correctness.png")
 
 

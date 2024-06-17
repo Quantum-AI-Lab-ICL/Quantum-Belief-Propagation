@@ -27,18 +27,20 @@ def main():
             energy_expectation(bp.beliefs_col, ham.hams_col, ham.beta)
         ) / 2)
 
+    print(HN)
+    print(Mx)
     plt.scatter(HN, Mx)
     plt.title(f"Transverse magnetisation for {N}x{N} system")
     plt.xlabel("<H>/N")
     plt.ylabel("Mx")
-    plt.savefig(f"examples/results/2d/n{N}x{N}_Mx_{reg_factor}.png")
+    plt.savefig(f"examples/results/n{N}x{N}_Mx_{reg_factor}.png")
     plt.clf()
 
     plt.scatter(HN, Czz)
     plt.title(f"Spin-spin correlation for {N}x{N} system")
     plt.xlabel("<H>/N")
     plt.ylabel("Czz")
-    plt.savefig(f"examples/results/2d/n{N}x{N}_Czz_{reg_factor}.png")
+    plt.savefig(f"examples/results/n{N}x{N}_Czz_{reg_factor}.png")
     plt.clf()
 
 

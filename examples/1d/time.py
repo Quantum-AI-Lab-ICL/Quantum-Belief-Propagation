@@ -1,11 +1,8 @@
-import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import time
-from jax.scipy import linalg
 
+from examples.example_utils import get_single_rho, ham_setup
 from propagation import BeliefPropagator
-from examples.example_utils import get_single_rho, \
-    ham_setup, get_diag_beliefs, hamiltonian_matrix
 
 
 def main():
@@ -20,7 +17,7 @@ def main():
         ham = ham_setup(size, beta, x_coeff, z_coeff, zz_coeff)
 
         bp_start_time = time.perf_counter()
-        bp = BeliefPropagator(ham, 1)
+        bp = BeliefPropagator(ham)
         for i in range(size):
             bp.step()
         get_single_rho(bp.beliefs, size)
@@ -32,7 +29,7 @@ def main():
         ham = ham_setup(size, beta, x_coeff, z_coeff, zz_coeff)
 
         bp_start_time = time.perf_counter()
-        bp = BeliefPropagator(ham, 1)
+        bp = BeliefPropagator(ham)
         for i in range(size):
             bp.step()
         get_single_rho(bp.beliefs, size)
@@ -44,6 +41,7 @@ def main():
     plt.ylabel("Computation time")
     plt.xlabel("Number of particles")
     plt.title("Computation time for belief propagation")
+    plt.tight_layout()
     plt.savefig("examples/results/1d/time.png")
 
 

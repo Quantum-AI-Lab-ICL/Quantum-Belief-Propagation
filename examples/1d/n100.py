@@ -1,9 +1,9 @@
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
-from propagation import BeliefPropagator
 from examples.example_utils import get_single_rho, trans_mag, \
     correlation, ham_setup
+from propagation import BeliefPropagator
 
 
 def main():
@@ -12,9 +12,8 @@ def main():
     Cxx = []
     HN = []
     for beta in jnp.linspace(0.1, 2.0, 20, dtype=jnp.float32):
-        print(beta)
         ham = ham_setup(N, beta, -1.05, 0.5, 1.0)
-        bp = BeliefPropagator(ham, 1)
+        bp = BeliefPropagator(ham)
         for i in range(N):
             print(i)
             bp.step()
@@ -27,13 +26,13 @@ def main():
     plt.scatter(HN, Mx)
     plt.xlabel("<H>/N")
     plt.ylabel("Mx")
-    plt.savefig("examples/results/n100_Mx.png")
+    plt.savefig("examples/results/1d/n100_Mx.png")
     plt.clf()
 
     plt.scatter(HN, Cxx)
     plt.xlabel("<H>/N")
     plt.ylabel("Cxx")
-    plt.savefig("examples/results/n100_Cxx.png")
+    plt.savefig("examples/results/1d/n100_Cxx.png")
     plt.clf()
 
 

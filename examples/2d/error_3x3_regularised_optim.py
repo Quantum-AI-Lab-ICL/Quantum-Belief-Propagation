@@ -1,26 +1,22 @@
 import jax.numpy as jnp
 from jax.scipy import linalg
 import matplotlib.pyplot as plt
-from jax import random
 
+from examples.example_utils import rdm, matrix_3x3
 from lattice_hamiltonian import LatticeHamiltonian
 from lattice_propagation import LatticeBeliefPropagator
 from pauli import Pauli
-from utils import _random_normalised_hermitian
-
-from examples.example_utils import rdm, matrix_3x3, get_single_rho
 
 
-def main():
+if __name__ == "__main__":
     x_coef = -3
     zz_coef = -1
     size = 3
 
     errors = []
+    space = jnp.linspace(0, 2, 50, dtype=jnp.float32)
 
-    beta = 2.0
-    space = jnp.linspace(0.01, 0.1, 10)
-    for reg_factor in space:
+    for beta in space:
         lat_ham = LatticeHamiltonian(3, 3, beta)
         for r in range(size):
             for c in range(size):
@@ -42,7 +38,7 @@ def main():
             for c in range(size):
                 exact_sol = exact_sol.at[r, c].set(rdm(rho, 1, r * size + c))
 
-        propagator = LatticeBeliefPropagator(lat_ham, reg_factor)
+        propagator = LatticeBeliefPropagator(lat_ham)
         for i in range(size * size):
             propagator.step()
             total_error = 0.0
@@ -52,16 +48,10 @@ def main():
                         propagator.mean_single_belief(r, c) -
                         exact_sol[r, c]
                     )
-        print(total_error / (size * size))
         errors.append(total_error / (size * size))
 
     plt.plot(space, errors)
-    plt.xlabel("Regularisation factor")
-    plt.ylabel("Average norm of error")
-    plt.title("Error against exact solution in 3x3 matrices by " +
-              "regularisation factor")
-    plt.savefig("examples/results/error_3x3_by_reg_scalar.png")
-
-
-if __name__ == "__main__":
-    main()
+    plt.xlabel("beta")
+    plt.ylabel("average norm of error")
+    plt.title("Error against exact solution in 3x3 matrices by beta value")
+    plt.savefig("examples/results/error_3x3_regularised_optim.png")

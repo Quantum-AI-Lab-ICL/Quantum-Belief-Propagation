@@ -1,12 +1,11 @@
+from jax.scipy import linalg
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from jax.scipy import linalg
 
 from examples.example_utils import get_single_rho, matrix_3x3, \
-    ham_setup, get_single_beliefs, \
-    mean_norm, lat_ham_setup
-from propagation import BeliefPropagator
+    ham_setup, get_single_beliefs, mean_norm, lat_ham_setup
 from lattice_propagation import LatticeBeliefPropagator
+from propagation import BeliefPropagator
 
 
 def main():
@@ -27,7 +26,7 @@ def main():
         exact_results = get_single_beliefs(rho_lattice, size_1d)
 
         ham = ham_setup(size_1d, beta, x_coeff, z_coeff, zz_coeff)
-        bp = BeliefPropagator(ham, 1)
+        bp = BeliefPropagator(ham)
         for i in range(size_1d):
             bp.step()
         results_1d = get_single_rho(bp.beliefs, size_1d)

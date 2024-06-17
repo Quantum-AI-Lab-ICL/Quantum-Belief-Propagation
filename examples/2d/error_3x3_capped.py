@@ -1,36 +1,22 @@
-import jax.numpy as jnp
 from jax.scipy import linalg
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
-from lattice_hamiltonian import LatticeHamiltonian
+from examples.example_utils import rdm, matrix_3x3, lat_ham_setup
 from lattice_propagation import LatticeBeliefPropagator
-from pauli import Pauli
-from utils import _double_to_single_trace
-
-from examples.example_utils import rdm, matrix_2x2, get_single_rho
 
 
 if __name__ == "__main__":
     x_coef = -3
     zz_coef = -1
-    size = 2
+    size = 3
     errors = []
-    space = jnp.linspace(0, 10, 100, dtype=jnp.float32)
+    space = jnp.linspace(0, 1, 10, dtype=jnp.float32)
 
     for beta in space:
-        lat_ham = LatticeHamiltonian(size, size, beta)
-        for r in range(size):
-            for c in range(size):
-                lat_ham.set_param_single(r, c, Pauli.X, x_coef)
-        for r in range(size):
-            for c in range(size - 1):
-                lat_ham.set_param_double_row(r, c, Pauli.Z, Pauli.Z, zz_coef)
-        for c in range(size):
-            for r in range(size - 1):
-                lat_ham.set_param_double_col(c, r, Pauli.Z, Pauli.Z, zz_coef)
-        lat_ham.compute_partial_hamiltonians()
+        lat_ham = lat_ham_setup(size, beta, x_coef, 0, zz_coef)
 
-        H = matrix_2x2(x_coef, zz_coef)
+        H = matrix_3x3(x_coef, zz_coef)
         rho = linalg.expm(-beta * H)
         rho /= jnp.trace(rho)
 
@@ -54,5 +40,5 @@ if __name__ == "__main__":
     plt.plot(space, errors)
     plt.xlabel("beta")
     plt.ylabel("average norm of error")
-    plt.title("Error against exact solution in 2x2 matrices by beta value")
-    plt.savefig("examples/results/error_2x2_regularised_optim.png")
+    plt.title("Error against exact solution in 3x3 matrices by beta value")
+    plt.savefig("examples/results/2d/error_3x3_capped.png")

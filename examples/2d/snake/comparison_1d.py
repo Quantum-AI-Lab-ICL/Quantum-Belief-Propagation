@@ -2,9 +2,8 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 from jax.scipy import linalg
 
-from examples.example_utils import rdm, get_single_rho, matrix_3x3, \
-    ham_setup, hamiltonian_matrix, get_diag_beliefs, get_single_beliefs, \
-    mean_norm
+from examples.example_utils import get_single_rho, matrix_3x3, \
+    ham_setup, hamiltonian_matrix, get_single_beliefs, mean_norm
 from propagation import BeliefPropagator
 
 
@@ -20,7 +19,7 @@ def main():
 
     for beta in beta_range:
         ham = ham_setup(size, beta, x_coeff, z_coeff, zz_coeff)
-        bp = BeliefPropagator(ham, 1)
+        bp = BeliefPropagator(ham)
         for i in range(size):
             bp.step()
         bp_results = get_single_rho(bp.beliefs, size)

@@ -3,3 +3,6 @@
 Software tool for running belief propagation on quantum models.
 For 1D model use `Hamiltonian` and `BeliefPropagator`.
 For 2D lattice model use `LatticeHamiltonian` and `LatticeBeliefPropagator`.
+
+The `examples` directory contains some code used to produce the relevant
+graphs.

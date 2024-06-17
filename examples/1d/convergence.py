@@ -1,10 +1,10 @@
+from jax.scipy import linalg
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
-from jax.scipy import linalg
 
-from propagation import BeliefPropagator
 from examples.example_utils import get_single_rho, \
     ham_setup, get_diag_beliefs, hamiltonian_matrix
+from propagation import BeliefPropagator
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
     exact_beliefs = get_diag_beliefs(rho, size)
     exact_results = get_single_rho(exact_beliefs, size)
 
-    bp = BeliefPropagator(ham, 1)
+    bp = BeliefPropagator(ham)
     step_range = range(size * 2)
     for i in step_range:
         bp.step()

@@ -7,11 +7,11 @@ from lattice_propagation import LatticeBeliefPropagator
 
 
 def main():
-    N = 4
+    N = 7
     Mx = []
     Czz = []
     HN = []
-    reg_factor = 0.01
+    reg_factor = 0.014
     for beta in jnp.linspace(0.1, 2.0, 20, dtype=jnp.float32):
         ham = lat_ham_setup(N, beta, -2.5, 0, -1.0)
         bp = LatticeBeliefPropagator(ham, reg_factor)
