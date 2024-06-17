@@ -2,6 +2,7 @@
 Hamiltonian class for model setup in the 1D algorithm.
 """
 
+import jax
 import jax.numpy as jnp
 
 from const import NUM_PARAMS_SINGLE, NUM_PARAMS_DOUBLE, MATRIX_SIZE_SINGLE, \
@@ -159,7 +160,7 @@ class Hamiltonian:
             return ham_single[index]
         return ham_single[index] / 2
 
-    def get_partial_hamiltonian(self, index):
+    def get_partial_hamiltonian(self, index: jnp.int32) -> jax.Array:
         """
         Get the partial Hamiltonian matrix at a particular index.
 

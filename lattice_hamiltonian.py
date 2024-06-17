@@ -1,6 +1,7 @@
 """
 LatticeHamiltonian class for model setup in the 2D algorithm.
 """
+import jax
 import jax.numpy as jnp
 
 from const import NUM_PARAMS_SINGLE, NUM_PARAMS_DOUBLE, MATRIX_SIZE_SINGLE, \
@@ -258,7 +259,8 @@ class LatticeHamiltonian:
             num_edges -= 1
         return hams_single[rowindex, colindex] / num_edges
 
-    def get_partial_ham_row(self, rowindex, edgeindex):
+    def get_partial_ham_row(self, rowindex: jnp.int32,
+                            edgeindex: jnp.int32) -> jax.Array:
         """
         Get the partial Hamiltonian matrix at a particular index in the row
         direction.
@@ -279,7 +281,8 @@ class LatticeHamiltonian:
 
         return self.hams_row[rowindex, edgeindex]
 
-    def get_partial_ham_col(self, colindex, edgeindex):
+    def get_partial_ham_col(self, colindex: jnp.int32,
+                            edgeindex: jnp.int32) -> jax.Array:
         """
         Get the partial Hamiltonian matrix at a particular index in the column
         direction.

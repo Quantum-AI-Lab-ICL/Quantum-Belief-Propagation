@@ -1,46 +1,37 @@
+"""
+Utility functions.
+"""
+from jax import Array
+from jax.scipy import linalg
 import jax.numpy as jnp
 import jax.typing
-from jax.scipy import linalg
-from jax import Array
-from jax import random
 
 
 def _bra_0() -> Array:
-    """
-    TODO
-    """
-
+    """Bra vector with value 0."""
     return jnp.array([[1, 0]], dtype=jnp.complex64)
 
 
 def _bra_1() -> Array:
-    """
-    TODO
-    """
-
+    """Bra vector with value 1."""
     return jnp.array([[0, 1]], dtype=jnp.complex64)
 
 
 def _ket_0() -> Array:
-    """
-    TODO
-    """
-
+    """Ket vector with value 0."""
     return jnp.array([[1], [0]], dtype=jnp.complex64)
 
 
 def _ket_1() -> Array:
-    """
-    TODO
-    """
-
+    """Ket vector with value 1."""
     return jnp.array([[0], [1]], dtype=jnp.complex64)
 
 
 def _double_to_single_trace(rho_double: jax.typing.ArrayLike,
                             trace_index: int) -> Array:
     """
-    TODO
+    Calculate the partial trace of a density matrix corresponding to 2
+    particles to get the density matrix for 1 particle.
     """
 
     if trace_index == 0:
@@ -56,44 +47,22 @@ def _double_to_single_trace(rho_double: jax.typing.ArrayLike,
 
 
 def _normalise(rho: jax.typing.ArrayLike) -> Array:
-    """
-    Normalise operator so that its trace is 1
-    """
-
+    """Normalise operator so that its trace is 1."""
     rho /= jnp.trace(rho)
     return rho
 
 
-def tensor_product(operators: jax.typing.ArrayLike) -> Array:
-    """
-    Calculate the tensor product of the operators.
-    """
-
+def _tensor_product(operators: jax.typing.ArrayLike) -> Array:
+    """Calculate the tensor product of the operators."""
     accumulator = jnp.array(1.0, dtype=jnp.complex64)
     [accumulator := jnp.kron(accumulator, x) for x in operators]
     return accumulator
 
 
 def _logmh(rho: jax.typing.ArrayLike) -> Array:
-    """
-    TODO
-    """
-
+    """Calculate the logarithm of a Hermitian matrix."""
     eigvals, eigvecs = linalg.eigh(rho)
     log_eigvals = jnp.log(eigvals)
     result = eigvecs @ jnp.diag(log_eigvals) \
         @ jnp.conjugate(jnp.transpose(eigvecs))
     return result
-
-
-def _random_normalised_hermitian(
-        size: jnp.int32, key: jax.typing.ArrayLike) -> (Array, Array):
-    factor = 3
-    real_key, imag_key = random.split(key)
-    real = random.uniform(real_key, (size, size))
-    imag = random.uniform(imag_key, (size, size))
-    matrix = real + 1.0j * imag
-    hermitian = matrix + matrix.transpose().conjugate()
-    result = _normalise(jnp.eye(size) + factor * hermitian)
-    new_key, _ = random.split(real_key)
-    return result, new_key
